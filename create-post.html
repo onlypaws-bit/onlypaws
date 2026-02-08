@@ -27,6 +27,22 @@
     .brandLogo{width:62px;height:62px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;}
     .brandLogo img{width:46px;height:46px;object-fit:contain;}
     .pill{padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:13px;color:rgba(255,255,255,.85);white-space:nowrap;}
+    .navRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .navBtn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;
+      cursor:pointer;font-size:13px;white-space:nowrap;
+      transition:transform .16s ease, background .16s ease, border-color .16s ease;
+      user-select:none;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22);}
+    .navBtn:active{transform: translateY(0px) scale(.99);}
+    footer{margin-top:28px;color:rgba(255,255,255,.75);font-size:13px;text-align:center;}
+    .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
+
     .panel{border-radius:22px;padding:22px;background:var(--card);border:1px solid var(--stroke);backdrop-filter:blur(10px);box-shadow:0 20px 45px rgba(0,0,0,.25);}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
     h1{margin:10px 0 10px;font-size:2.2rem;letter-spacing:-.6px;}
@@ -75,6 +91,8 @@
       display:none;
     }
     .locked b{display:block;margin-bottom:6px;}
+  
+    #modePill{display:none !important;}
   </style>
 </head>
 
@@ -85,23 +103,24 @@
         <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
         <span>OnlyPaws</span>
       </a>
-      <div class="pill" id="modePill">Create Post</div>
+
+      <div class="navRight">
+        <div class="pill" id="userPill">…</div>
+        <a class="navBtn" id="navProfile" href="profile.html" style="display:none;">Profile</a>
+        <a class="navBtn" id="navFanDash" href="fan-dash.html" style="display:none;">Dashboard</a>
+        <a class="navBtn" id="navCreatorDash" href="creator-dash.html" style="display:none;">Dashboard</a>
+        <button class="navBtn" id="navLogout" type="button" style="display:none;">Log out</button>
+      </div>
     </div>
 
     <div class="panel">
       <div class="row">
         <div>
-          <div class="pill" id="whoPill">…</div>
+<div class="pill" id="modePill" style="margin-top:8px;" style="display:none;;display:none;">Create Post</div>
           <h1 id="pageTitle">Create a post</h1>
           <p class="sub" id="pageSub">Creator-only. This writes into <b>posts</b>.</p>
         </div>
-        <div class="btnRow" style="margin-top:0;">
-          <a class="ghost" href="dashboard.html">Dashboard</a>
-          <a class="ghost" href="profile.html">Profile</a>
-          <a class="ghost" href="feed.html">Feed</a>
-          <button class="ghost" id="logoutBtn" type="button">Log out</button>
         </div>
-      </div>
 
       <div class="locked" id="creatorLockBox">
         <b>🔒 Creator tools locked</b>
@@ -150,15 +169,88 @@
 
       <div class="btnRow">
         <button class="btn" id="publishBtn" type="button">Publish</button>
-        <a class="ghost" id="cancelEditBtn" href="dashboard.html" style="display:none;">Cancel</a>
+        <a class="ghost" id="cancelEditBtn" href="creator-dash.html" style="display:none;">Cancel</a>
       </div>
 
       <div class="msg" id="msg"></div>
     </div>
   </div>
 
+    <footer>
+      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+      <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+    </footer>
+
+
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
+
+  <script>
+    function show(el, yes){
+      if(!el) return;
+      el.style.display = yes ? "inline-flex" : "none";
+    }
+
+    async function hydrateUserPill(){
+      try{
+        const pill = document.getElementById("userPill");
+        if(!pill) return;
+
+        const { data: sessData } = await onlypawsClient.auth.getSession();
+        const session = sessData?.session;
+        if(!session){
+          pill.textContent = "Guest";
+          return;
+        }
+
+        const uid = session.user.id;
+        const email = session.user.email || "";
+
+        const { data: prof } = await onlypawsClient
+          .from("profiles")
+          .select("username, display_name, role")
+          .eq("user_id", uid)
+          .maybeSingle();
+
+        const uname = (prof?.username || "").trim();
+        const dname = (prof?.display_name || "").trim();
+
+        if(uname) pill.textContent = "@" + uname;
+        else if(dname) pill.textContent = dname;
+        else if(email) pill.textContent = email.split("@")[0];
+        else pill.textContent = "User";
+      }catch(e){}
+    }
+
+    async function hydrateNav(){
+      const profileBtn = document.getElementById("navProfile");
+      const fanDash = document.getElementById("navFanDash");
+      const creatorDash = document.getElementById("navCreatorDash");
+      const logoutBtn = document.getElementById("navLogout");
+
+      show(profileBtn, true);
+      show(logoutBtn, true);
+      show(fanDash, false);
+      show(creatorDash, false);
+
+      try{
+        const { data: u } = await onlypawsClient.auth.getUser();
+        const userId = u?.user?.id;
+        if(!userId) return;
+
+        const { data: p } = await onlypawsClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if(p?.role === "creator") show(creatorDash, true);
+        else show(fanDash, true);
+      }catch(e){}
+    }
+  </script>
+
 
   <script>
     const CREATOR_PLAN_URL = "https://buy.stripe.com/5kQbJ25UY5qegpM4kD5wI02";
@@ -264,7 +356,7 @@
       whoPill.textContent = profile?.username ? `@${profile.username}` : (user.email || "creator");
 
       if(!profile || profile.role !== "creator"){
-        window.location.href = "feed.html";
+        window.location.href = "index.html";
         return false;
       }
 
@@ -479,12 +571,15 @@ console.log("BUCKET:", BUCKET, "PATH:", path);
     publishBtn.addEventListener("click", publishOrUpdate);
     refreshBtn.addEventListener("click", () => window.location.reload());
 
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
+    document.getElementById("navLogout").addEventListener("click", async () => {
       await onlypawsClient.auth.signOut();
-      window.location.href = "feed.html";
+      window.location.href = "index.html";
     });
 
     (async () => {
+      await hydrateNav();
+      await hydrateUserPill();
+
       const ok = await requireCreatorAndPlan();
       if(!ok) return;
 
