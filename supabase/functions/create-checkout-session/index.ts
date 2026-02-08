@@ -1,11 +1,12 @@
 // supabase/functions/create-checkout-session/index.ts
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 type Body = {
   creator_id: string;
   plan_id: string;
-  success_path?: string; // e.g. "/creator-profile.html?u=..."
-  cancel_path?: string;  // e.g. "/subscribers.html?creator=..."
+  success_path?: string;
+  cancel_path?: string;
 };
 
 const corsHeaders = {
@@ -42,9 +43,7 @@ async function stripeCreateCheckoutSession(
   });
 
   const j = await res.json();
-  if (!res.ok) {
-    throw new Error(`Stripe error: ${JSON.stringify(j)}`);
-  }
+  if (!res.ok) throw new Error((j?.error?.message ?? JSON.stringify(j)));
   return j;
 }
 
@@ -53,10 +52,8 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json(405, { error: "Method not allowed" });
 
   try {
-    // Stripe secret (support your OP_ naming too)
     const STRIPE_SECRET_KEY =
-      Deno.env.get("STRIPE_SECRET_KEY") ||
-      Deno.env.get("OP_STRIPE_SECRET_KEY");
+      Deno.env.get("STRIPE_SECRET_KEY") || Deno.env.get("OP_STRIPE_SECRET_KEY");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -67,7 +64,9 @@ Deno.serve(async (req) => {
       return json(500, { error: "Missing Supabase env vars" });
     }
 
-    // Validate user JWT
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
+
+    // --- auth utente (fan) ---
     const authHeader = req.headers.get("Authorization") ?? "";
     const supaUser = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
@@ -88,9 +87,11 @@ Deno.serve(async (req) => {
     const successUrl = origin + (body.success_path ?? `/creator-profile.html?u=${creator_id}`);
     const cancelUrl = origin + (body.cancel_path ?? `/subscribers.html?creator=${creator_id}`);
 
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    });
 
-    // 1) Load plan (must belong to creator + active + monthly)
+    // 1) plan
     const planRes = await admin
       .from("creator_plans")
       .select("id, creator_id, is_active, billing_period, stripe_price_id")
@@ -106,13 +107,12 @@ Deno.serve(async (req) => {
 
     let stripe_price_id: string | null = planRes.data.stripe_price_id ?? null;
 
-    // 2) If missing price id -> auto-create products/prices
+    // 2) ensure price id
     if (!stripe_price_id) {
       const ensureRes = await fetch(`${SUPABASE_URL}/functions/v1/ensure-creator-prices`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // IMPORTANT: use service role so it can run server-side
           Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         },
         body: JSON.stringify({ creator_id }),
@@ -123,7 +123,6 @@ Deno.serve(async (req) => {
         return json(400, { error: "Failed to auto-create Stripe prices", details: ensureJson });
       }
 
-      // Reload plan to get stripe_price_id now
       const reload = await admin
         .from("creator_plans")
         .select("stripe_price_id")
@@ -137,28 +136,58 @@ Deno.serve(async (req) => {
       stripe_price_id = reload.data.stripe_price_id;
     }
 
-    // 3) Load creator connect account (YOUR column names)
+    // 3) creator connect account id (DB)
     const creatorRes = await admin
       .from("profiles")
-      .select("user_id, stripe_connect_account_id, stripe_onboarding_status, charges_enabled")
+      .select("user_id, stripe_connect_account_id")
       .eq("user_id", creator_id)
       .single();
 
-    if (creatorRes.error || !creatorRes.data) return json(400, { error: "Creator profile not found" });
+    if (creatorRes.error || !creatorRes.data) {
+      return json(400, { error: "Creator profile not found" });
+    }
 
-    const creator = creatorRes.data as any;
-
-    if (!creator.stripe_connect_account_id)
+    const connectId = (creatorRes.data as any).stripe_connect_account_id as string | null;
+    if (!connectId) {
       return json(400, { error: "Creator missing stripe_connect_account_id" });
+    }
 
-    if (creator.stripe_onboarding_status !== "completed" || creator.charges_enabled !== true)
-      return json(400, { error: "Creator not ready for charges" });
+    // 4) ✅ verifica stato reale su Stripe (robusto, niente colonne fantasma)
+    const acc = await stripe.accounts.retrieve(connectId);
 
-    // 4) Platform fee (optional)
+    const ready =
+      Boolean(acc.details_submitted) &&
+      Boolean(acc.charges_enabled) &&
+      Boolean(acc.payouts_enabled);
+
+    if (!ready) {
+      return json(400, {
+        error: "Creator not ready for charges",
+        connect: {
+          id: acc.id,
+          details_submitted: acc.details_submitted,
+          charges_enabled: acc.charges_enabled,
+          payouts_enabled: acc.payouts_enabled,
+          disabled_reason: acc.requirements?.disabled_reason ?? null,
+          currently_due: acc.requirements?.currently_due ?? [],
+          past_due: acc.requirements?.past_due ?? [],
+          eventually_due: acc.requirements?.eventually_due ?? [],
+        },
+      });
+    }
+
+    // (opzionale) se vuoi tenere sync nel DB:
+    // await admin.from("profiles").update({
+    //   charges_enabled: acc.charges_enabled,
+    //   payouts_enabled: acc.payouts_enabled,
+    //   stripe_onboarding_status: acc.details_submitted ? "completed" : "incomplete",
+    // }).eq("user_id", creator_id);
+
+    // 5) fees
     const feePercent = Number(Deno.env.get("PLATFORM_FEE_PERCENT") ?? "0");
     const amountPercentToCreator = Math.max(0, Math.min(100, 100 - feePercent));
 
-    // 5) Create Stripe Checkout Session (subscription)
+    // 6) checkout session subscription
     const params: Record<string, string> = {
       mode: "subscription",
       success_url: successUrl,
@@ -172,10 +201,8 @@ Deno.serve(async (req) => {
       "metadata[creator_id]": creator_id,
       "metadata[plan_id]": plan_id,
 
-      // Connect destination for subscriptions
-      "subscription_data[transfer_data][destination]": creator.stripe_connect_account_id,
+      "subscription_data[transfer_data][destination]": connectId,
 
-      // keep metadata on subscription too (useful in webhooks)
       "subscription_data[metadata][fan_id]": fanId,
       "subscription_data[metadata][creator_id]": creator_id,
       "subscription_data[metadata][plan_id]": plan_id,
@@ -186,10 +213,9 @@ Deno.serve(async (req) => {
     }
 
     const session = await stripeCreateCheckoutSession(STRIPE_SECRET_KEY, params);
-
     return json(200, { url: session.url, id: session.id });
   } catch (e) {
     console.error(e);
-    return json(500, { error: "Server error", details: String(e?.message ?? e) });
+    return json(500, { error: "Server error", details: String((e as any)?.message ?? e) });
   }
 });
