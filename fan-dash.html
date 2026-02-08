@@ -105,6 +105,10 @@
       background: rgba(0,0,0,.14);
     }
     .msg{margin-top:10px;font-size:13px;color:rgba(255,255,255,.85);min-height:18px}
+  
+    footer{margin-top:28px;color:rgba(255,255,255,.75);font-size:13px;text-align:center;}
+    .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
+
   </style>
 </head>
 
@@ -119,7 +123,7 @@
     </a>
 
     <div class="navRight">
-      <div class="pill" id="userPill">…</div>
+      <div class="pill">Fan Dashboard</div>
       <a class="navBtn" href="profile.html">Profile</a>
       <button class="navBtn" id="logoutBtn">Log out</button>
     </div>
@@ -127,7 +131,7 @@
 
   <!-- HEADER PANEL (NO BUTTONS HERE) -->
   <div class="panel" style="margin-bottom:16px;">
-    <h1>Fan Dashboard</h1>
+    <h1>My Dashboard</h1>
     <p class="sub">Manage your subscriptions, follows, and access.</p>
     <div class="msg" id="topMsg"></div>
   </div>
@@ -153,56 +157,24 @@
       <div class="pill">My Access</div>
       <p class="sub" style="margin-top:10px;">Shortcuts to what you can view.</p>
       <div class="btnRow">
-        <a class="ghost" href="purchased-posts.html?scope=purchased">View purchased posts</a>
+        <a class="btn" href="feed.html?scope=subscribed">View subscribed feed</a>
+        <a class="ghost" href="feed.html?scope=purchased">View purchased posts</a>
       </div>
     </div>
   </div>
+
+    <footer>
+      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+      <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+    </footer>
+
+  
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
-
 <script>
-  async function hydrateUserPill(){
-    try{
-      const pill = document.getElementById("userPill");
-      if(!pill) return;
-
-      const { data: sessData } = await onlypawsClient.auth.getSession();
-      const session = sessData?.session;
-      if(!session){
-        pill.textContent = "Guest";
-        return;
-      }
-
-      const uid = session.user.id;
-      const email = session.user.email || "";
-
-      const { data: prof } = await onlypawsClient
-        .from("profiles")
-        .select("username, display_name")
-        .eq("user_id", uid)
-        .maybeSingle();
-
-      const uname = (prof?.username || "").trim();
-      const dname = (prof?.display_name || "").trim();
-
-      if(uname){
-        pill.textContent = "@" + uname;
-      }else if(dname){
-        pill.textContent = dname;
-      }else if(email){
-        pill.textContent = email.split("@")[0];
-      }else{
-        pill.textContent = "User";
-      }
-    }catch(e){}
-  }
-</script>
-
-<script>
-  hydrateUserPill();
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     await onlypawsClient.auth.signOut();
     window.location.href = "index.html";
