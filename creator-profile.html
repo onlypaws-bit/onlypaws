@@ -186,11 +186,18 @@
         <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
         <span>OnlyPaws</span>
       </a>
-
       <div class="navRight">
-        <a class="navBtn" href="feed.html">Feed</a>
-        <a class="navBtn primary" href="profile.html">Profile</a>
-        <button class="navBtn" id="logoutBtn" type="button">Log out</button>
+                <div class="pill" id="userPill">…</div>
+
+<a class="navBtn primary" id="navProfile" href="profile.html" style="display:none;">Profile</a>
+
+        <!-- FAN dashboard -->
+        <a class="navBtn" id="navFanDash" href="fan-dash.html" style="display:none;">Dashboard</a>
+
+        <!-- CREATOR dashboard -->
+        <a class="navBtn" id="navCreatorDash" href="creator-dash.html" style="display:none;">Dashboard</a>
+
+        <button class="navBtn" id="navLogout" type="button" style="display:none;">Log out</button>
       </div>
     </div>
 
@@ -210,8 +217,7 @@
         <div class="btnRow" id="actionRow">
           <button class="ghost" id="followBtn" type="button">Follow</button>
           <button class="btn" id="premiumBtn" type="button">Subscribe</button>
-          <a class="ghost" id="backToFeed" href="feed.html">Back</a>
-        </div>
+</div>
 
         <div class="hint" id="creatorHint"></div>
       </div>
@@ -247,7 +253,72 @@
   <script>
     function goIndex(){ window.location.replace("index.html"); }
 
-    function esc(s){
+    
+
+    function show(el, yes){
+      if(!el) return;
+      el.style.display = yes ? "inline-flex" : "none";
+    }
+
+    async function hydrateUserPill(){
+      try{
+        const pill = document.getElementById("userPill");
+        if(!pill) return;
+
+        const { data: sessData } = await onlypawsClient.auth.getSession();
+        const session = sessData?.session;
+        if(!session){
+          pill.textContent = "Guest";
+          return;
+        }
+
+        const uid = session.user.id;
+        const email = session.user.email || "";
+
+        const { data: prof } = await onlypawsClient
+          .from("profiles")
+          .select("username, display_name, role")
+          .eq("user_id", uid)
+          .maybeSingle();
+
+        const uname = (prof?.username || "").trim();
+        const dname = (prof?.display_name || "").trim();
+
+        if(uname) pill.textContent = "@" + uname;
+        else if(dname) pill.textContent = dname;
+        else if(email) pill.textContent = email.split("@")[0];
+        else pill.textContent = "User";
+      }catch(e){}
+    }
+
+    async function hydrateNav(){
+      const profileBtn = document.getElementById("navProfile");
+      const fanDash = document.getElementById("navFanDash");
+      const creatorDash = document.getElementById("navCreatorDash");
+      const logoutBtn = document.getElementById("navLogout");
+
+      show(profileBtn, true);
+      show(logoutBtn, true);
+      show(fanDash, false);
+      show(creatorDash, false);
+
+      try{
+        const { data: u } = await onlypawsClient.auth.getUser();
+        const userId = u?.user?.id;
+        if(!userId) return;
+
+        const { data: p } = await onlypawsClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if(p?.role === "creator") show(creatorDash, true);
+        else show(fanDash, true);
+      }catch(e){}
+    }
+
+function esc(s){
       return (s ?? "").toString()
         .replaceAll("&","&amp;")
         .replaceAll("<","&lt;")
@@ -462,7 +533,8 @@
     }
 
     function setupLogout(){
-      const logoutBtn = document.getElementById("logoutBtn");
+      const logoutBtn = document.getElementById("navLogout");
+      if(!logoutBtn) return;
       logoutBtn.addEventListener("click", async (ev) => {
         ev.preventDefault();
         logoutBtn.disabled = true;
@@ -490,7 +562,10 @@
       const session = sessData?.session;
       if(!session){ goIndex(); return; }
 
-      const fanId = session.user.id;
+      
+      await hydrateNav();
+      await hydrateUserPill();
+const fanId = session.user.id;
       const username = getUsernameFromUrl();
       if(!username){ goIndex(); return; }
 
