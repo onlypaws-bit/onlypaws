@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OnlyPaws — Creator Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root{
+      --bg1:#6B4EFF;
+      --bg2:#8B6CFF;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.85);
+      --stroke:rgba(255,255,255,.16);
+      --card:rgba(0,0,0,.16);
+      --btn:#ffffff;
+      --btnText:#6B4EFF;
+      --shadow: rgba(0,0,0,.25);
+      --soft: rgba(255,255,255,.10);
+      --soft2: rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(1000px 650px at 90% 30%, rgba(0,0,0,.22), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+    .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 70px;}
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+      text-decoration:none;color:white;font-weight:900;letter-spacing:.2px;
+      user-select:none;
+    }
+    .brandLogo{
+      width:62px;height:62px;border-radius:14px;
+      background: rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    .brandLogo img{width:46px;height:46px;object-fit:contain;}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:13px;color:rgba(255,255,255,.85);
+      white-space:nowrap;
+    }
+    .navRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .navBtn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;
+      cursor:pointer; user-select:none;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22);}
+    .navBtn.primary{
+      background: var(--btn);
+      border: none;
+      color: var(--btnText);
+      box-shadow:0 14px 30px rgba(0,0,0,.20);
+    }
+    .panel{
+      border-radius:22px;
+      padding:22px;
+      background: var(--card);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow:0 20px 45px var(--shadow);
+    }
+    h1{
+      margin: 10px 0 10px;
+      font-size: clamp(2rem, 4vw, 2.6rem);
+      line-height: 1.05;
+      letter-spacing:-0.6px;
+    }
+    .sub{
+      margin:0;
+      color:var(--muted);
+      font-size:1.05rem;
+      line-height:1.55;
+      max-width:65ch;
+    }
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr;} }
+    .card{
+      border-radius:18px;
+      padding:16px;
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+    }
+    .card h3{margin:0 0 8px;font-size:1.05rem;}
+    .card p{margin:0;color:rgba(255,255,255,.82);font-size:13px;line-height:1.5;}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:12px 16px;border-radius:999px;
+      background: var(--btn);color:var(--btnText);
+      text-decoration:none;font-weight:900;border:none;cursor:pointer;
+      box-shadow:0 14px 30px rgba(0,0,0,.22);
+      transition: transform .18s ease, opacity .18s ease;
+      white-space:nowrap;
+    }
+    .btn:hover{transform: translateY(-1px) scale(1.02)}
+    .btn:active{transform: translateY(0px) scale(.99)}
+    .ghost{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:12px 16px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;cursor:pointer;
+      white-space:nowrap;
+    }
+    .locked{
+      margin-top:14px;
+      border-radius:18px;
+      padding:16px;
+      background: rgba(0,0,0,.14);
+      border:1px solid rgba(255,255,255,.16);
+    }
+    .locked b{display:block;margin-bottom:6px;}
+    .hint{color:rgba(255,255,255,.78);font-size:13px;line-height:1.5;white-space:pre-wrap;}
+    .sectionTitle{
+      margin-top:18px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .sectionTitle h2{margin:0;font-size:1.15rem;}
+    .list{ margin-top:12px; display:grid; gap:10px; }
+    .rowCard{
+      border-radius:18px;
+      padding:14px;
+      background: var(--soft);
+      border:1px solid rgba(255,255,255,.16);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .postMeta{min-width:240px;flex:1;}
+    .postMeta b{display:block;font-size:1rem;margin-bottom:4px;}
+    .postMeta .small{color:rgba(255,255,255,.78);font-size:13px;line-height:1.45;}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.16);
+      font-size:12px;font-weight:900;
+      white-space:nowrap;
+    }
+    .postActions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .danger{
+      background: rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.20);
+      color:white;
+    }
+    .mediaWrap{
+      margin-top:10px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+    }
+    .mediaWrap img,
+    .mediaWrap video{
+      width:100%;
+      display:block;
+      max-height:420px;
+      object-fit:cover;
+    }
+    .petMeta{min-width:240px;flex:1;}
+    .petMeta b{display:block;font-size:1rem;margin-bottom:4px;}
+    .petMeta .small{color:rgba(255,255,255,.78);font-size:13px;line-height:1.45;}
+    .petLine{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+    .petAvatarMini{
+      width:38px;height:38px;border-radius:14px;object-fit:cover;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.18);
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+    .subLine{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .avatarMini{
+      width:34px;height:34px;border-radius:12px;object-fit:cover;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.18);
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+    .walletGrid{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:12px;
+    }
+    @media (max-width: 920px){ .walletGrid{grid-template-columns:1fr;} }
+    .walletBig{
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      font-weight: 900;
+      letter-spacing:-0.4px;
+      margin: 4px 0 6px;
+    }
+    .walletMeta{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;
+    }
+    footer{margin-top:28px;color:rgba(255,255,255,.75);font-size:13px;text-align:center;}
+    .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="nav">
+      <a href="feed.html" class="brand">
+        <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
+        <span>OnlyPaws</span>
+      </a>
+      <div class="navRight">
+        <div class="pill" id="whoPill">Dashboard</div>
+        <a class="navBtn" href="feed.html">Feed</a>
+        <a class="navBtn" href="profile.html" id="profileBtn" style="display:none;">Profile</a>
+        <a class="navBtn primary" href="creators.html" id="loginCreatorBtn" style="display:none;">Log in (Creator)</a>
+        <button class="navBtn" id="logoutBtn" type="button" style="display:none;">Log out</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h1>Creator Dashboard</h1>
+      <p class="sub">Manage your creator tools, posts, pets, and subscribers.</p>
+
+      <div class="locked" id="stateBox" style="margin-top:14px;">
+        <b>Loading…</b>
+        <div class="hint">Checking session, role, and plan.</div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card">
+          <h3>Publish</h3>
+          <p>Create FREE or PREMIUM posts with optional media.</p>
+          <div class="btnRow">
+            <a class="btn" id="createPostBtn" href="create-post.html" style="pointer-events:none;opacity:.6;">Create post</a>
+            <a class="ghost" href="feed.html">View feed</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Profile</h3>
+          <p>Update your display name, username, bio, and settings.</p>
+          <div class="btnRow">
+            <a class="btn" id="gotoProfileBtn" href="profile.html">Edit profile</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- WALLET -->
+      <div class="sectionTitle">
+        <h2>Your wallet</h2>
+        <div class="hint" id="walletHint">Loading…</div>
+      </div>
+
+      <div class="walletGrid">
+        <div class="card">
+          <h3>Available</h3>
+          <div class="walletBig" id="walletAvailable">—</div>
+          <p style="margin-top:4px;color:rgba(255,255,255,.82);font-size:13px;line-height:1.5;">
+            Available to withdraw.
+          </p>
+          <div class="walletMeta">
+            <span class="badge" id="walletPending">Pending: —</span>
+            <span class="badge">Min: €20.00</span>
+            <span class="badge" id="walletPayouts">Payouts: —</span>
+            <span class="badge" id="walletOpen">Open withdrawal: —</span>
+          </div>
+          <div class="locked" id="walletMsg" style="margin-top:12px;display:none;">
+            <b>Wallet</b>
+            <div class="hint" id="walletMsgText"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Withdraw</h3>
+          <p style="color:rgba(255,255,255,.82);font-size:13px;line-height:1.5;">
+            Request a withdrawal of your full available amount. Minimum €20.00.
+          </p>
+          <div class="btnRow">
+            <button class="btn" id="withdrawBtn" type="button" style="pointer-events:none;opacity:.6;">Request withdrawal</button>
+
+            <!-- Enable payouts (hidden until needed) -->
+            <a class="ghost" id="enablePayoutBtn" href="#" style="display:none;">
+              Enable payouts
+            </a>
+
+            <button class="ghost" id="refreshWalletBtn" type="button">Refresh</button>
+          </div>
+          <div class="hint" id="withdrawHint" style="margin-top:10px;">—</div>
+        </div>
+      </div>
+
+      <div class="sectionTitle" style="margin-top:14px;">
+        <h2>Recent withdrawals</h2>
+        <div class="hint" id="withdrawalsHint">Loading…</div>
+      </div>
+      <div class="list" id="withdrawalsList"></div>
+
+      <!-- PETS -->
+      <div class="sectionTitle">
+        <h2>Your pets</h2>
+        <div class="hint" id="petsHint">Loading…</div>
+      </div>
+      <div class="btnRow" style="margin-top:8px;">
+        <a class="ghost" href="pets.html">➕ Add / manage pets</a>
+      </div>
+      <div class="list" id="petsList"></div>
+
+      <!-- SUBSCRIBERS -->
+      <div class="sectionTitle">
+        <h2>Your subscribers</h2>
+        <div class="hint" id="subsHint">Loading…</div>
+      </div>
+      <div class="list" id="subsList"></div>
+
+      <!-- FOLLOWERS -->
+      <div class="sectionTitle">
+        <h2>Your followers</h2>
+        <div class="hint" id="followersHint">Loading…</div>
+      </div>
+      <div class="list" id="followersList"></div>
+
+      <!-- POSTS -->
+      <div class="sectionTitle">
+        <h2>Your posts</h2>
+        <div class="hint" id="myPostsHint">Loading…</div>
+      </div>
+      <div class="list" id="myPosts"></div>
+    </div>
+
+    <footer>
+      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+      <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="onlypawsClient.js"></script>
+  <script>
+    // ===== CONFIG =====
+    const CREATOR_PLAN_URL = "https://buy.stripe.com/5kQbJ25UY5qegpM4kD5wI02";
+    // Stripe Connect link is created by Supabase Edge Function: connect-update
+    const MIN_WITHDRAW_CENTS = 2000;
+
+    function goIndex(){ window.location.replace("index.html"); }
+
+    const whoPill = document.getElementById("whoPill");
+    const stateBox = document.getElementById("stateBox");
+    const loginCreatorBtn = document.getElementById("loginCreatorBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const profileBtn = document.getElementById("profileBtn");
+    const createPostBtn = document.getElementById("createPostBtn");
+    const gotoProfileBtn = document.getElementById("gotoProfileBtn");
+    const myPostsEl = document.getElementById("myPosts");
+    const myPostsHint = document.getElementById("myPostsHint");
+    const petsList = document.getElementById("petsList");
+    const petsHint = document.getElementById("petsHint");
+    const subsList = document.getElementById("subsList");
+    const subsHint = document.getElementById("subsHint");
+    const followersList = document.getElementById("followersList");
+    const followersHint = document.getElementById("followersHint");
+
+    // Wallet
+    const walletHint = document.getElementById("walletHint");
+    const walletAvailableEl = document.getElementById("walletAvailable");
+    const walletPendingEl = document.getElementById("walletPending");
+    const walletPayoutsEl = document.getElementById("walletPayouts");
+    const walletOpenEl = document.getElementById("walletOpen");
+    const walletMsg = document.getElementById("walletMsg");
+    const walletMsgText = document.getElementById("walletMsgText");
+    const withdrawBtn = document.getElementById("withdrawBtn");
+    const enablePayoutBtn = document.getElementById("enablePayoutBtn");
+    const refreshWalletBtn = document.getElementById("refreshWalletBtn");
+    const withdrawHint = document.getElementById("withdrawHint");
+    const withdrawalsHint = document.getElementById("withdrawalsHint");
+    const withdrawalsList = document.getElementById("withdrawalsList");
+
+    let __profileUserId = null;
+    let __walletId = null;
+
+    let __creatorUnlocked = false; // creator_plan active
+    let __payoutEnabled = false;   // payouts_enabled active
+
+    function esc(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function setState(title, text, extrasHtml){
+      stateBox.innerHTML = `
+        <b>${title}</b>
+        <div class="hint">${(text || "").toString().replaceAll("\n","<br/>")}</div>
+        ${extrasHtml || ""}
+      `;
+    }
+
+    function enable(el, yes){
+      if(!el) return;
+      el.style.pointerEvents = yes ? "auto" : "none";
+      el.style.opacity = yes ? "1" : ".6";
+      if("disabled" in el) el.disabled = !yes;
+    }
+
+    function fmtEUR(cents){
+      const n = Number(cents || 0);
+      return "€" + (n / 100).toFixed(2);
+    }
+
+    function showWalletMsg(title, text){
+      walletMsg.style.display = "block";
+      walletMsg.querySelector("b").textContent = title;
+      walletMsgText.textContent = text || "";
+    }
+
+    function hideWalletMsg(){
+      walletMsg.style.display = "none";
+      walletMsgText.textContent = "";
+    }
+
+    async function hasActiveCreatorPlan(userId){
+      try{
+        const { data, error } = await onlypawsClient
+          .from("entitlements")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("key", "creator_plan")
+          .eq("status", "active")
+          .maybeSingle();
+        if(error) return false;
+        return !!data;
+      }catch(e){ return false; }
+    }
+
+    async function hasPayoutsEnabled(userId){
+      try{
+        const { data, error } = await onlypawsClient
+          .from("entitlements")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("key", "payouts_enabled")
+          .eq("status", "active")
+          .maybeSingle();
+        if(error) return false;
+        return !!data;
+      }catch(e){ return false; }
+    }
+
+    async function fetchConnectStatus(){
+      // Prefer Supabase Functions invoke (handles auth + avoids CORS headaches)
+      const { data, error } = await onlypawsClient.functions.invoke("connect-status", { body: {} });
+      if(error) throw error;
+      return data;
+    }
+
+    // ===== Media preview =====
+    function mediaBlock(p){
+      if(!p?.media_url) return "";
+      const isVideo = p.media_type === "video";
+      const url = esc(p.media_url);
+      if(isVideo){
+        return `<div class="mediaWrap"><video controls playsinline src="${url}"></video></div>`;
+      }
+      return `<div class="mediaWrap"><img src="${url}" alt="Post media"></div>`;
+    }
+
+    function renderMyPosts(list){
+      if(!list || list.length === 0){
+        myPostsEl.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No posts yet</b>
+            <div class="hint">Create your first post to see it here.</div>
+          </div>
+        `;
+        return;
+      }
+      myPostsEl.innerHTML = list.map(p => {
+        const title = p.title || "Untitled";
+        const isPaid = !!p.is_paid;
+        const badge = isPaid ? "🔒 PREMIUM" : "🆓 FREE";
+        const vis = p.is_public ? "🌍 PUBLIC" : "🙈 PRIVATE";
+        const date = p.created_at ? new Date(p.created_at).toLocaleString() : "";
+        const preview = p.preview || (p.content ? String(p.content).slice(0, 90) : "");
+        const id = p.id;
+        return `
+          <div class="rowCard" data-post-id="${esc(id)}">
+            <div class="postMeta">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+                <span class="badge">${badge}</span>
+                <span class="badge">${vis}</span>
+                ${date ? `<span class="badge">${esc(date)}</span>` : ``}
+              </div>
+              <b>${esc(title)}</b>
+              ${mediaBlock(p)}
+              <div class="small" style="margin-top:8px;">${esc(preview || "")}</div>
+            </div>
+            <div class="postActions">
+              <a class="ghost" href="create-post.html?edit=${encodeURIComponent(id)}">Edit</a>
+              <button class="ghost danger" type="button" data-action="delete">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      myPostsEl.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const row = btn.closest(".rowCard");
+          const postId = row?.getAttribute("data-post-id");
+          if(!postId) return;
+          if(!confirm("Delete this post? This can’t be undone.")) return;
+
+          btn.disabled = true;
+          btn.textContent = "Deleting…";
+          try{
+            const { data: u } = await onlypawsClient.auth.getUser();
+            const userId = u?.user?.id;
+            const del = await onlypawsClient
+              .from("posts")
+              .delete()
+              .eq("id", postId)
+              .eq("creator_id", userId);
+            if(del.error) throw del.error;
+            row.remove();
+            myPostsHint.textContent = "Deleted ✅";
+            if(!myPostsEl.querySelector(".rowCard")){
+              renderMyPosts([]);
+              myPostsHint.textContent = "No posts yet.";
+            }
+          }catch(e){
+            btn.disabled = false;
+            btn.textContent = "Delete";
+            alert("❌ Delete failed: " + (e?.message || String(e)));
+          }
+        });
+      });
+    }
+
+    async function loadMyPosts(session){
+      myPostsHint.textContent = "Loading…";
+      myPostsEl.innerHTML = "";
+      try{
+        const { data, error } = await onlypawsClient
+          .from("posts")
+          .select("id, title, content, preview, media_url, media_type, is_paid, is_public, created_at")
+          .eq("creator_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(30);
+        if(error) throw error;
+        renderMyPosts(data || []);
+        myPostsHint.textContent = (data && data.length) ? "Loaded ✅" : "No posts yet.";
+      }catch(e){
+        myPostsHint.textContent = "Couldn’t load posts";
+        myPostsEl.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>Posts list error</b>
+            <div class="hint">${esc(e?.message || String(e))}</div>
+          </div>
+        `;
+      }
+    }
+
+    function renderPets(list){
+      if(!list || list.length === 0){
+        petsList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No pets yet</b>
+            <div class="hint">Add your first pet in Pets.</div>
+          </div>
+        `;
+        return;
+      }
+      petsList.innerHTML = list.map(p => {
+        const name = p.name || "Pet";
+        const species = p.species ? `• ${p.species}` : "";
+        const breed = p.breed ? `• ${p.breed}` : "";
+        const age = (p.age_years != null) ? `• ${p.age_years}y` : "";
+        const bio = p.bio || "";
+        const avatar = p.avatar_url
+          ? `<img class="petAvatarMini" src="${esc(p.avatar_url)}" alt="pet avatar">`
+          : `<div class="petAvatarMini">🐾</div>`;
+        return `
+          <div class="rowCard">
+            <div class="petMeta">
+              <div class="petLine">
+                ${avatar}
+                <b style="margin:0;">${esc(name)} ${esc(species)} ${esc(breed)} ${esc(age)}</b>
+              </div>
+              <div class="small">${esc(bio)}</div>
+            </div>
+            <div class="postActions">
+              <a class="ghost" href="pets.html">Manage</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadPets(session){
+      petsHint.textContent = "Loading…";
+      petsList.innerHTML = "";
+      try{
+        const { data, error } = await onlypawsClient
+          .from("pets")
+          .select("id, name, species, breed, age_years, bio, avatar_url, created_at, owner_id")
+          .eq("owner_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(30);
+        if(error) throw error;
+        renderPets(data || []);
+        petsHint.textContent = (data && data.length) ? "Loaded ✅" : "No pets yet.";
+      }catch(e){
+        petsHint.textContent = "Couldn’t load pets";
+        petsList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>Pets list error</b>
+            <div class="hint">${esc(e?.message || String(e))}</div>
+          </div>
+        `;
+      }
+    }
+
+    function renderSubs(list){
+      if(!list || list.length === 0){
+        subsList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No subscribers yet</b>
+            <div class="hint">Once paid subscriptions go live, they will show here.</div>
+          </div>
+        `;
+        return;
+      }
+      subsList.innerHTML = list.map(s => {
+        const name = s.fan_display_name || s.fan_username || "Subscriber";
+        const uname = s.fan_username ? `@${s.fan_username}` : "";
+        const status = s.status || (s.is_active ? "active" : "inactive");
+        const since = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
+        const periodEnd = s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "";
+        const avatar = s.fan_avatar_url
+          ? `<img class="avatarMini" src="${esc(s.fan_avatar_url)}" alt="avatar">`
+          : `<div class="avatarMini">🐾</div>`;
+        return `
+          <div class="rowCard">
+            <div class="postMeta">
+              <div class="subLine">
+                ${avatar}
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <b style="margin:0;">${esc(name)} ${uname ? `<span style="opacity:.85;font-weight:700;">${esc(uname)}</span>` : ""}</b>
+                  <span class="small" style="opacity:.9;">
+                    ${since ? `Subscribed: ${esc(since)}` : "Subscribed"}
+                    ${periodEnd ? ` • Renews until: ${esc(periodEnd)}` : ""}
+                  </span>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <span class="badge">💳 ${esc(status)}</span>
+                <span class="badge">${s.is_active ? "⭐ ACTIVE" : "⛔ INACTIVE"}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderFollowers(list){
+      if(!list || list.length === 0){
+        followersList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No followers yet</b>
+            <div class="hint">When users follow you for free, they will show here.</div>
+          </div>
+        `;
+        return;
+      }
+      followersList.innerHTML = list.map(f => {
+        const name = f.fan_display_name || f.fan_username || "Follower";
+        const uname = f.fan_username ? `@${f.fan_username}` : "";
+        const since = f.created_at ? new Date(f.created_at).toLocaleDateString() : "";
+        const avatar = f.fan_avatar_url
+          ? `<img class="avatarMini" src="${esc(f.fan_avatar_url)}" alt="avatar">`
+          : `<div class="avatarMini">🐾</div>`;
+        return `
+          <div class="rowCard">
+            <div class="postMeta">
+              <div class="subLine">
+                ${avatar}
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <b style="margin:0;">${esc(name)} ${uname ? `<span style="opacity:.85;font-weight:700;">${esc(uname)}</span>` : ""}</b>
+                  <span class="small" style="opacity:.9;">
+                    ${since ? `Followed: ${esc(since)}` : "Followed"}
+                  </span>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <span class="badge">🆓 follower</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadAudience(session){
+      subsHint.textContent = "Loading…";
+      followersHint.textContent = "Loading…";
+      subsList.innerHTML = "";
+      followersList.innerHTML = "";
+      try{
+        const { data: subs, error: se } = await onlypawsClient
+          .from("v_subscribers_creator")
+          .select("*")
+          .eq("creator_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if(se) throw se;
+
+        const { data: foll, error: fe } = await onlypawsClient
+          .from("v_followers_creator")
+          .select("*")
+          .eq("creator_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if(fe) throw fe;
+
+        renderSubs(subs || []);
+        renderFollowers(foll || []);
+
+        subsHint.textContent = (subs && subs.length) ? "Loaded ✅" : "No subscribers yet.";
+        followersHint.textContent = (foll && foll.length) ? "Loaded ✅" : "No followers yet.";
+      }catch(e){
+        const msg = esc(e?.message || String(e));
+        subsHint.textContent = "Couldn’t load subscribers";
+        followersHint.textContent = "Couldn’t load followers";
+        subsList.innerHTML = `<div class="locked" style="margin-top:10px;"><b>Subscribers error</b><div class="hint">${msg}</div></div>`;
+        followersList.innerHTML = `<div class="locked" style="margin-top:10px;"><b>Followers error</b><div class="hint">${msg}</div></div>`;
+      }
+    }
+    async function loadSubscribers(session){ return loadAudience(session); }
+
+    function renderWithdrawals(list){
+      if(!list || list.length === 0){
+        withdrawalsList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No withdrawals</b>
+            <div class="hint">When you request a withdrawal, it will appear here.</div>
+          </div>
+        `;
+        return;
+      }
+      withdrawalsList.innerHTML = list.map(w => {
+        const amount = fmtEUR(w.amount_cents);
+        const status = (w.status || "unknown").toString();
+        const requested = w.requested_at ? new Date(w.requested_at).toLocaleString() : "";
+        const processed = w.processed_at ? new Date(w.processed_at).toLocaleString() : "";
+        const paid = w.paid_at ? new Date(w.paid_at).toLocaleString() : "";
+        return `
+          <div class="rowCard">
+            <div class="postMeta">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px;">
+                <span class="badge">${esc(amount)}</span>
+                <span class="badge">${esc(status)}</span>
+                ${requested ? `<span class="badge">Requested: ${esc(requested)}</span>` : ``}
+                ${processed ? `<span class="badge">Processed: ${esc(processed)}</span>` : ``}
+                ${paid ? `<span class="badge">Paid: ${esc(paid)}</span>` : ``}
+              </div>
+              <div class="small" style="opacity:.9;">ID: ${esc(w.id)}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadWallet(){
+      walletHint.textContent = "Loading…";
+      withdrawalsHint.textContent = "Loading…";
+      hideWalletMsg();
+      __walletId = null;
+
+      walletAvailableEl.textContent = "—";
+      walletPendingEl.textContent = "Pending: —";
+      walletPayoutsEl.textContent = "Payouts: —";
+      walletOpenEl.textContent = "Open withdrawal: —";
+      withdrawHint.textContent = "—";
+      enable(withdrawBtn, false);
+      if(enablePayoutBtn) enablePayoutBtn.style.display = "none";
+
+      if(!__profileUserId){
+        walletHint.textContent = "No profile";
+        showWalletMsg("Wallet unavailable", "Missing profiles.user_id (cannot link wallet).");
+        withdrawalsHint.textContent = "—";
+        withdrawalsList.innerHTML = "";
+        return;
+      }
+
+      try{
+        const { data: wallet, error: we } = await onlypawsClient
+          .from("wallets")
+          .select("profile_id")
+          .eq("profile_id", __profileUserId)
+          .maybeSingle();
+        if(we) throw we;
+
+        if(!wallet?.profile_id){
+          walletHint.textContent = "No wallet";
+          showWalletMsg("No wallet yet", "This profile doesn’t have a wallet row. Create it in the backend (trigger) or insert it once from an admin tool.");
+          withdrawalsHint.textContent = "—";
+          withdrawalsList.innerHTML = "";
+          return;
+        }else{
+          __walletId = wallet.profile_id;
+        }
+
+        const { data: st, error: se } = await onlypawsClient
+          .from("v_wallet_status")
+          .select("wallet_id, currency, available_cents, pending_cents, meets_minimum_withdraw, has_open_withdrawal, can_withdraw")
+          .eq("wallet_id", __walletId)
+          .maybeSingle();
+        if(se) throw se;
+
+        const available = Number(st?.available_cents || 0);
+        const pending = Number(st?.pending_cents || 0);
+        const canWithdraw = !!st?.can_withdraw;
+        const hasOpen = !!st?.has_open_withdrawal;
+
+        // If payouts look disabled, re-check Stripe once (in case entitlements are stale)
+        if(__creatorUnlocked && !__payoutEnabled){
+          try{
+            const cs2 = await fetchConnectStatus();
+            console.log("connect-status (wallet)", cs2);
+            __payoutEnabled = !!cs2?.payouts_enabled;
+          }catch(_e){}
+        }
+
+        walletAvailableEl.textContent = fmtEUR(available);
+        walletPendingEl.textContent = "Pending: " + fmtEUR(pending);
+        walletPayoutsEl.textContent = "Payouts: " + (__payoutEnabled ? "YES" : "NO");
+        walletOpenEl.textContent = "Open withdrawal: " + (hasOpen ? "YES" : "NO");
+
+        if(!__creatorUnlocked){
+          enable(withdrawBtn, false);
+          if(enablePayoutBtn) enablePayoutBtn.style.display = "none";
+          withdrawHint.textContent = "Creator Plan required to withdraw.";
+        } else {
+          if(!__payoutEnabled){
+            enable(withdrawBtn, false);
+            if(enablePayoutBtn) enablePayoutBtn.style.display = "inline-flex";
+            withdrawHint.textContent = "Enable payouts to withdraw.";
+          } else {
+            if(enablePayoutBtn) enablePayoutBtn.style.display = "none";
+            if(!canWithdraw){
+              withdrawHint.textContent = hasOpen
+                ? "You already have an open withdrawal. Wait until it’s processed."
+                : "Minimum withdrawal is €20.00.";
+              enable(withdrawBtn, false);
+            }else{
+              withdrawHint.textContent = "Ready ✅ You can request: " + fmtEUR(available);
+              enable(withdrawBtn, true);
+            }
+          }
+        }
+
+        const { data: wd, error: wde } = await onlypawsClient
+          .from("withdrawals")
+          .select("id, amount_cents, status, requested_at, processed_at, paid_at")
+          .eq("wallet_id", __walletId)
+          .order("requested_at", { ascending: false })
+          .limit(10);
+        if(wde) throw wde;
+
+        renderWithdrawals(wd || []);
+        withdrawalsHint.textContent = (wd && wd.length) ? "Loaded ✅" : "No withdrawals yet.";
+        walletHint.textContent = "Loaded ✅";
+
+      }catch(e){
+        const status = e?.status || e?.statusCode;
+        if(status === 403){
+          walletHint.textContent = "Wallet blocked";
+          showWalletMsg(
+            "Wallet blocked (403)",
+            "RLS is denying access to wallets/v_wallet_status. Make sure you're logged in on this domain and wallets policies allow SELECT for auth.uid()."
+          );
+          withdrawalsHint.textContent = "—";
+          return;
+        }
+        walletHint.textContent = "Couldn’t load wallet";
+        showWalletMsg("Wallet error", e?.message || String(e));
+        withdrawalsHint.textContent = "—";
+      }
+    }
+
+    async function requestWithdrawal(){
+      if(!__walletId || !__profileUserId) return alert("Wallet not ready yet.");
+      if(!__creatorUnlocked) return alert("Creator Plan required to withdraw.");
+      if(!__payoutEnabled) return alert("Enable payouts first.");
+
+      withdrawBtn.disabled = true;
+      withdrawBtn.textContent = "Requesting…";
+      try{
+        const { data: st, error: se } = await onlypawsClient
+          .from("v_wallet_status")
+          .select("available_cents, can_withdraw, has_open_withdrawal")
+          .eq("wallet_id", __walletId)
+          .maybeSingle();
+        if(se) throw se;
+
+        const available = Number(st?.available_cents || 0);
+        if(!st?.can_withdraw || available < MIN_WITHDRAW_CENTS){
+          throw new Error("Not eligible to withdraw yet (min €20, no open withdrawals).");
+        }
+
+        if(!confirm("Request withdrawal of " + fmtEUR(available) + " ?")) return;
+
+        const ins = await onlypawsClient
+          .from("withdrawals")
+          .insert([{
+            profile_id: __profileUserId,
+            wallet_id: __walletId,
+            amount_cents: available,
+            currency: "EUR",
+            status: "requested"
+          }]);
+        if(ins.error) throw ins.error;
+
+        withdrawHint.textContent = "Requested ✅";
+        await loadWallet();
+      }catch(e){
+        alert("❌ Withdrawal failed: " + (e?.message || String(e)));
+        withdrawHint.textContent = "Failed: " + (e?.message || String(e));
+      }finally{
+        withdrawBtn.disabled = false;
+        withdrawBtn.textContent = "Request withdrawal";
+      }
+    }
+
+    // ✅ Stripe Connect: open payouts onboarding/update flow (server creates Account Link)
+    async function openPayoutSetup(){
+      try{
+        if(!enablePayoutBtn) return;
+
+        enablePayoutBtn.textContent = "Opening Stripe…";
+        enablePayoutBtn.style.pointerEvents = "none";
+        enablePayoutBtn.style.opacity = ".75";
+
+        const { data: s } = await onlypawsClient.auth.getSession();
+        const token = s?.session?.access_token;
+        if(!token) throw new Error("No session token");
+
+        const returnUrl = window.location.origin + "/payouts-setup.html?done=1";
+        const refreshUrl = window.location.origin + "/payouts-setup.html?retry=1";
+
+        const { data, error } = await onlypawsClient.functions.invoke("connect-update", {
+          body: { return_url: returnUrl, refresh_url: refreshUrl },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if(error) throw error;
+        if(!data?.url) throw new Error("Missing Stripe URL");
+
+        // Same-tab redirect avoids popup blockers
+        window.location.href = data.url;
+
+      }catch(e){
+        const msgText = e?.message || String(e);
+        withdrawHint.textContent = "Payout setup failed: " + msgText;
+        alert("❌ Payout setup failed: " + msgText);
+      }finally{
+        if(enablePayoutBtn){
+          enablePayoutBtn.textContent = "Enable payouts";
+          enablePayoutBtn.style.pointerEvents = "auto";
+          enablePayoutBtn.style.opacity = "1";
+        }
+      }
+    }
+
+    // ===== MAIN LOAD =====
+    async function load(){
+      if(typeof onlypawsClient === "undefined"){
+        setState("❌ onlypawsClient missing", "Check onlypawsClient.js path and script order.");
+        return;
+      }
+
+      enable(gotoProfileBtn, true);
+
+      if(refreshWalletBtn && refreshWalletBtn.dataset.bound !== "1"){
+        refreshWalletBtn.dataset.bound = "1";
+        refreshWalletBtn.addEventListener("click", loadWallet);
+      }
+      if(withdrawBtn && withdrawBtn.dataset.bound !== "1"){
+        withdrawBtn.dataset.bound = "1";
+        withdrawBtn.addEventListener("click", requestWithdrawal);
+      }
+      if(enablePayoutBtn && enablePayoutBtn.dataset.bound !== "1"){
+        enablePayoutBtn.dataset.bound = "1";
+        enablePayoutBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          openPayoutSetup();
+        });
+      }
+
+      const { data: sessData } = await onlypawsClient.auth.getSession();
+      const session = sessData?.session;
+
+      loginCreatorBtn.style.display = session ? "none" : "inline-flex";
+      logoutBtn.style.display = session ? "inline-flex" : "none";
+      profileBtn.style.display = session ? "inline-flex" : "none";
+
+      __creatorUnlocked = false;
+      __payoutEnabled = false;
+      if(enablePayoutBtn) enablePayoutBtn.style.display = "none";
+
+      if(!session){
+        whoPill.textContent = "Dashboard";
+        enable(createPostBtn, false);
+        setState("Not logged in", "Log in as a creator to access dashboard tools.");
+        myPostsHint.textContent = "Log in to see your posts.";
+        myPostsEl.innerHTML = "";
+        petsHint.textContent = "Log in to see pets.";
+        petsList.innerHTML = "";
+        subsHint.textContent = "Log in to see subscribers.";
+        subsList.innerHTML = "";
+        followersHint.textContent = "Log in to see followers.";
+        followersList.innerHTML = "";
+        walletHint.textContent = "Log in to see wallet.";
+        withdrawalsHint.textContent = "Log in to see withdrawals.";
+        withdrawalsList.innerHTML = "";
+        enable(withdrawBtn, false);
+        return;
+      }
+
+      const email = session.user?.email || "creator";
+      whoPill.textContent = email;
+
+      const { data: prof, error: pe } = await onlypawsClient
+        .from("profiles")
+        .select("user_id, username, display_name, role")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if(pe){
+        enable(createPostBtn, false);
+        setState("Profile error", pe.message);
+        __profileUserId = null;
+        await loadWallet();
+        await loadPets(session);
+        await loadSubscribers(session);
+        await loadMyPosts(session);
+        return;
+      }
+
+      __profileUserId = prof?.user_id || session.user.id;
+
+      const role = prof?.role || "fan";
+      const username = prof?.username;
+      const handle = username ? `@${username}` : (prof?.display_name || email);
+      whoPill.textContent = handle;
+
+      if(username){
+        createPostBtn.href = `create-post.html?u=${encodeURIComponent(username)}`;
+        gotoProfileBtn.href = `profile.html?u=${encodeURIComponent(username)}`;
+      }else{
+        createPostBtn.href = "create-post.html";
+        gotoProfileBtn.href = "profile.html";
+      }
+
+      if(role !== "creator"){
+        enable(createPostBtn, false);
+        setState("🚫 Not a creator account", "Your profile role is not set to creator.");
+        await loadWallet();
+        await loadPets(session);
+        await loadSubscribers(session);
+        await loadMyPosts(session);
+        return;
+      }
+
+      const active = await hasActiveCreatorPlan(session.user.id);
+      __creatorUnlocked = !!active;
+
+      if(!active){
+        enable(createPostBtn, false);
+        const qp = new URLSearchParams(window.location.search);
+        const cameFromStripe = (
+          qp.has("session_id") || qp.has("success") || qp.has("checkout") ||
+          qp.has("payment_intent") || qp.has("redirect_status")
+        );
+
+        const extras = `
+          <div class="btnRow" style="margin-top:12px;">
+            ${
+              cameFromStripe
+                ? `<button class="navBtn primary" type="button" disabled style="opacity:.65;cursor:not-allowed;">Creator Plan processing…</button>`
+                : `<a class="navBtn primary" href="${CREATOR_PLAN_URL}" target="_blank" rel="noopener">Unlock Creator Access — €10/month</a>`
+            }
+            <button class="navBtn" type="button" id="refreshBtn">Refresh</button>
+          </div>
+          ${
+            cameFromStripe
+              ? `<div class="hint" style="margin-top:10px;">✅ Payment started — waiting for Stripe confirmation. Then press Refresh.</div>`
+              : ``
+          }
+        `;
+
+        setState(
+          "🔒 Creator tools locked",
+          cameFromStripe
+            ? "Thanks! Your payment is processing. Creator Plan stays disabled until our server receives confirmation from Stripe."
+            : "Your creator account is ready, but the Creator Plan is not active yet (or the dashboard can’t read it).",
+          extras
+        );
+
+        setTimeout(() => {
+          const refreshBtn = document.getElementById("refreshBtn");
+          if(refreshBtn) refreshBtn.addEventListener("click", () => window.location.reload());
+        }, 0);
+
+        await loadWallet();
+        await loadPets(session);
+        await loadSubscribers(session);
+        await loadMyPosts(session);
+        return;
+      }
+
+      try{
+        const cs = await fetchConnectStatus();
+        console.log("connect-status", cs);
+        __payoutEnabled = !!cs?.payouts_enabled;
+      }catch(e){
+        console.warn("connect-status failed, falling back to entitlements:", e);
+        __payoutEnabled = await hasPayoutsEnabled(session.user.id);
+      }
+
+enable(createPostBtn, true);
+      setState("✅ Creator unlocked", "Plan active. You can create posts and use creator tools.");
+
+      await loadWallet();
+      await loadPets(session);
+      await loadSubscribers(session);
+      await loadMyPosts(session);
+    }
+
+    (function setupLogoutOnce(){
+      if(!logoutBtn) return;
+      if(logoutBtn.dataset.bound === "1") return;
+      logoutBtn.dataset.bound = "1";
+      logoutBtn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        logoutBtn.disabled = true;
+        logoutBtn.textContent = "Logging out…";
+        try { await onlypawsClient.auth.signOut(); } catch(e) {}
+        goIndex();
+      });
+    })();
+
+    load();
+  </script>
+</body>
+</html>
