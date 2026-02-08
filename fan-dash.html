@@ -28,13 +28,40 @@
     }
     .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 70px;}
 
+    /* NAV */
     .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:28px;}
-    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;font-weight:900;letter-spacing:.2px;user-select:none;}
-    .brandLogo{width:62px;height:62px;border-radius:14px;background: rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;font-weight:900;}
+    .brandLogo{
+      width:62px;height:62px;border-radius:14px;
+      background: rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);
+      display:flex;align-items:center;justify-content:center;
+    }
     .brandLogo img{width:46px;height:46px;object-fit:contain;}
     .brandText{font-size:1.1rem;}
-    .pill{padding:8px 14px;border-radius:999px;background: rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:13px;color:rgba(255,255,255,.85);white-space:nowrap;}
 
+    .navRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+
+    .pill{
+      padding:8px 14px;border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:13px;color:rgba(255,255,255,.85);
+      white-space:nowrap;
+    }
+
+    .navBtn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;
+      cursor:pointer;font-size:13px;white-space:nowrap;
+      transition:transform .16s ease, background .16s ease;
+    }
+    .navBtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.14)}
+
+    /* CONTENT */
     .grid{display:grid;grid-template-columns: 1fr 1fr;gap:16px;}
     @media (max-width: 920px){ .grid{grid-template-columns:1fr;} }
 
@@ -54,287 +81,94 @@
       border:1px solid rgba(255,255,255,.16);
       border-radius:16px;
       padding:12px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
     }
     .left{min-width:0}
     .title{font-weight:900}
     .meta{font-size:13px;color:rgba(255,255,255,.82);margin-top:4px}
-    .btnRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center;}
+
+    .btnRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
     .btn{
-      display:inline-flex;align-items:center;justify-content:center;
       padding:12px 16px;border-radius:999px;
       background: var(--btn); color: var(--btnText);
-      text-decoration:none; font-weight:900;
-      box-shadow:0 14px 30px rgba(0,0,0,.22);
-      border:none; cursor:pointer; white-space:nowrap;
+      font-weight:900;border:none;cursor:pointer;
     }
     .ghost{
-      display:inline-flex;align-items:center;justify-content:center;
       padding:12px 16px;border-radius:999px;
       background: rgba(255,255,255,.12);
       border:1px solid rgba(255,255,255,.18);
-      color: white;
-      text-decoration:none; font-weight:800;
-      cursor:pointer; white-space:nowrap;
+      color:white;text-decoration:none;font-weight:800;
     }
     .badge{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
+      font-size:12px;padding:6px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,.18);
       background: rgba(0,0,0,.14);
-      color: rgba(255,255,255,.85);
-      white-space:nowrap;
     }
-    .msg{margin-top:10px;font-size:13px;color:rgba(255,255,255,.85);white-space:pre-wrap;min-height:18px}
-    a{color:white}
+    .msg{margin-top:10px;font-size:13px;color:rgba(255,255,255,.85);min-height:18px}
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="nav">
-      <a href="index.html" class="brand">
-        <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
-        <span class="brandText">OnlyPaws</span>
-      </a>
+<div class="wrap">
+
+  <!-- NAV -->
+  <div class="nav">
+    <a href="feed.html" class="brand">
+      <div class="brandLogo"><img src="logo.png"></div>
+      <span class="brandText">OnlyPaws</span>
+    </a>
+
+    <div class="navRight">
       <div class="pill">Fan Dashboard</div>
+      <a class="navBtn" href="fan-dash.html">Dashboard</a>
+      <a class="navBtn" href="feed.html">Feed</a>
+      <button class="navBtn" id="logoutBtn">Log out</button>
     </div>
-
-    <div class="panel" style="margin-bottom:16px;">
-      <h1>My Dashboard</h1>
-      <p class="sub">Manage your subscriptions, follows, and access.</p>
-      <div class="btnRow">
-        <a class="ghost" href="feed.html">Go to Feed</a>
-        <button class="ghost" id="logoutBtn">Log out</button>
-      </div>
-      <div class="msg" id="topMsg"></div>
-    </div>
-
-    <div class="grid">
-      <!-- Subscriptions -->
-      <div class="panel">
-        <div class="pill">My Subscriptions</div>
-        <p class="sub" style="margin-top:10px;">Cancel anytime. Access remains active until the end of the billing period.</p>
-        <div class="list" id="subsList"></div>
-        <div class="msg" id="subsMsg"></div>
-      </div>
-
-      <!-- Following -->
-      <div class="panel">
-        <div class="pill">Following</div>
-        <p class="sub" style="margin-top:10px;">Creators you follow.</p>
-        <div class="list" id="followsList"></div>
-        <div class="msg" id="followsMsg"></div>
-      </div>
-
-      <!-- Access -->
-      <div class="panel" style="grid-column: 1 / -1;">
-        <div class="pill">My Access</div>
-        <p class="sub" style="margin-top:10px;">Shortcuts to what you can view.</p>
-        <div class="btnRow">
-          <a class="btn" href="feed.html?scope=subscribed">View subscribed feed</a>
-          <a class="ghost" href="feed.html?scope=purchased">View purchased posts</a>
-        </div>
-        <div class="msg" id="accessMsg"></div>
-      </div>
-    </div>
-
-    <footer style="margin-top:28px;color:rgba(255,255,255,.75);font-size:13px;text-align:center;">
-      © 2026 OnlyPaws • Built with toe beans energy 🐾
-    </footer>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
+  <!-- HEADER PANEL (NO BUTTONS HERE) -->
+  <div class="panel" style="margin-bottom:16px;">
+    <h1>My Dashboard</h1>
+    <p class="sub">Manage your subscriptions, follows, and access.</p>
+    <div class="msg" id="topMsg"></div>
+  </div>
 
-  <script>
-    const topMsg = document.getElementById("topMsg");
-    const subsList = document.getElementById("subsList");
-    const subsMsg = document.getElementById("subsMsg");
-    const followsList = document.getElementById("followsList");
-    const followsMsg = document.getElementById("followsMsg");
-    const logoutBtn = document.getElementById("logoutBtn");
+  <div class="grid">
+    <div class="panel">
+      <div class="pill">My Subscriptions</div>
+      <p class="sub" style="margin-top:10px;">
+        Cancel anytime. Access remains active until the end of the billing period.
+      </p>
+      <div class="list" id="subsList"></div>
+      <div class="msg" id="subsMsg"></div>
+    </div>
 
-    function setMsg(el, t){ el.textContent = t || ""; }
+    <div class="panel">
+      <div class="pill">Following</div>
+      <p class="sub" style="margin-top:10px;">Creators you follow.</p>
+      <div class="list" id="followsList"></div>
+      <div class="msg" id="followsMsg"></div>
+    </div>
 
-    function fmtDate(iso){
-      if(!iso) return "";
-      try{
-        const d = new Date(iso);
-        return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
-      }catch{ return iso; }
-    }
+    <div class="panel" style="grid-column:1/-1;">
+      <div class="pill">My Access</div>
+      <p class="sub" style="margin-top:10px;">Shortcuts to what you can view.</p>
+      <div class="btnRow">
+        <a class="btn" href="feed.html?scope=subscribed">View subscribed feed</a>
+        <a class="ghost" href="feed.html?scope=purchased">View purchased posts</a>
+      </div>
+    </div>
+  </div>
 
-    function makeItem({title, meta, rightHtml}){
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <div class="left">
-          <div class="title">${title}</div>
-          <div class="meta">${meta || ""}</div>
-        </div>
-        <div>${rightHtml || ""}</div>
-      `;
-      return div;
-    }
+</div>
 
-    async function requireSession(){
-      const { data } = await onlypawsClient.auth.getSession();
-      if(!data?.session){
-        window.location.href = "fans.html?next=fan-dashboard.html";
-        return null;
-      }
-      return data.session;
-    }
-
-    async function loadSubscriptions(uid){
-      subsList.innerHTML = "";
-      setMsg(subsMsg, "Loading…");
-
-      // ⚠️ ADATTA QUI: nomi tabella/campi (metto il pattern più comune)
-      // fan_subscriptions: fan_id, creator_id, status, current_period_end, stripe_subscription_id
-      const { data, error } = await onlypawsClient
-        .from("subscribers")
-        .select("creator_id,status,current_period_end,cancel_at_period_end,stripe_subscription_id")
-        .eq("fan_id", uid)
-        .order("created_at", { ascending:false });
-
-      if(error){
-        setMsg(subsMsg, "❌ " + error.message);
-        return;
-      }
-
-      if(!data?.length){
-        setMsg(subsMsg, "No active subscriptions yet.");
-        return;
-      }
-
-      setMsg(subsMsg, "");
-
-      data.forEach((s) => {
-        const status = (s.status || "unknown").toLowerCase();
-        const end = fmtDate(s.current_period_end);
-
-        let badge = "";
-        if(status === "active" && s.cancel_at_period_end && end){
-          badge = `<span class="badge">Cancels on ${end}</span>`;
-        } else if(status === "active"){
-          badge = `<span class="badge">Active</span>`;
-        } else if(end){
-          badge = `<span class="badge">${status} • until ${end}</span>`;
-        } else {
-          badge = `<span class="badge">${status}</span>`;
-        }
-
-        // Link creator profile: adatta se usi username route
-        const profileLink = `profile.html?u=${encodeURIComponent(s.creator_id)}`;
-
-        // Cancel button only if active
-        const canCancel = status === "active" && s.stripe_subscription_id;
-        const right = `
-          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-            ${badge}
-            <a class="ghost" href="${profileLink}">View creator</a>
-            ${canCancel ? `<button class="btn" data-cancel-sub="${s.stripe_subscription_id}">Cancel</button>` : ``}
-          </div>
-        `;
-
-        subsList.appendChild(makeItem({
-          title: "Creator",
-          meta: s.creator_id,
-          rightHtml: right
-        }));
-      });
-
-      // Wire cancel buttons (null-safe)
-      subsList.querySelectorAll("[data-cancel-sub]").forEach(btn => {
-        btn.addEventListener("click", async () => {
-          const subId = btn.getAttribute("data-cancel-sub");
-          if(!subId) return;
-
-          if(!confirm("Cancel this subscription? You will keep access until the end of the billing period.")) return;
-
-          btn.disabled = true;
-          setMsg(subsMsg, "Canceling…");
-
-          try{
-            // ⚠️ qui serve una edge function che fa Stripe subscriptions.update(cancel_at_period_end=true)
-            // nome suggerito: "cancel-subscription"
-            const { data, error } = await onlypawsClient.functions.invoke("cancel-subscription", {
-              body: { stripe_subscription_id: subId }
-            });
-            if(error) throw error;
-
-            setMsg(subsMsg, "✅ Cancellation scheduled.");
-            // reload
-            await loadSubscriptions(uid);
-          }catch(e){
-            setMsg(subsMsg, "❌ " + (e?.message || String(e)));
-          }finally{
-            btn.disabled = false;
-          }
-        });
-      });
-    }
-
-    async function loadFollows(uid){
-      followsList.innerHTML = "";
-      setMsg(followsMsg, "Loading…");
-
-      // ⚠️ ADATTA: follows: fan_id, creator_id, created_at
-      const { data, error } = await onlypawsClient
-        .from("followers")
-        .select("creator_id,created_at")
-        .eq("fan_id", uid)
-        .order("created_at", { ascending:false });
-
-      if(error){
-        setMsg(followsMsg, "❌ " + error.message);
-        return;
-      }
-
-      if(!data?.length){
-        setMsg(followsMsg, "You’re not following anyone yet.");
-        return;
-      }
-
-      setMsg(followsMsg, "");
-
-      data.forEach((f) => {
-        const profileLink = `profile.html?u=${encodeURIComponent(f.creator_id)}`;
-        followsList.appendChild(makeItem({
-          title: "Creator",
-          meta: f.creator_id,
-          rightHtml: `<a class="ghost" href="${profileLink}">View</a>`
-        }));
-      });
-    }
-
-    logoutBtn.addEventListener("click", async () => {
-      await onlypawsClient.auth.signOut();
-      window.location.href = "index.html";
-    });
-
-    (async () => {
-      if(typeof onlypawsClient === "undefined"){
-        setMsg(topMsg, "❌ onlypawsClient not found. Check supabase.js path + script order.");
-        return;
-      }
-
-      const session = await requireSession();
-      if(!session) return;
-
-      const uid = session.user.id;
-      setMsg(topMsg, "");
-
-      await loadSubscriptions(uid);
-      await loadFollows(uid);
-    })();
-  </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script>
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await onlypawsClient.auth.signOut();
+    window.location.href = "index.html";
+  });
+</script>
 </body>
 </html>
-
