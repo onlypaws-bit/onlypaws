@@ -28,6 +28,20 @@
     .brandLogo{width:62px;height:62px;border-radius:14px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;}
     .brandLogo img{width:46px;height:46px;object-fit:contain;}
     .pill{padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:13px;}
+    .navRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .navBtn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;
+      cursor:pointer; user-select:none;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      font-size:13px; white-space:nowrap;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22);}
+    .navBtn:active{transform: translateY(0px) scale(.99);}
+
     .panel{border-radius:22px;padding:22px;background:var(--card);border:1px solid var(--stroke);backdrop-filter:blur(10px);}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
     h1{margin:10px 0;font-size:2.2rem;}
@@ -44,13 +58,18 @@
     textarea{min-height:110px;}
     .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;}
     .btn{padding:12px 16px;border-radius:999px;background:#fff;color:#6B4EFF;font-weight:900;border:none;cursor:pointer;}
-    .ghost{padding:12px 16px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:white;cursor:pointer;}
+    .ghost{
+      padding:12px 16px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;justify-content:center;
+    }
     .msg{margin-top:10px;min-height:18px;font-size:13px;white-space:pre-wrap;}
     .avatarBox{margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);display:flex;gap:14px;flex-wrap:wrap;}
     .avatarImg{width:74px;height:74px;border-radius:22px;object-fit:cover;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18);}
     .dangerZone{margin-top:16px;padding:14px;border-radius:18px;background:rgba(0,0,0,.14);border:1px solid rgba(255,120,120,.35);}
     .dangerBtn{border-color:rgba(255,120,120,.55)!important;}
-    .toolRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 
     .uploadHint{
       margin-top:8px;
@@ -63,22 +82,28 @@
       line-height:1.45;
     }
 
-
     footer{margin-top:28px;color:rgba(255,255,255,.75);font-size:13px;text-align:center;}
     .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
-
   </style>
 </head>
 
 <body>
 <div class="wrap">
   <div class="nav">
-    <a href="feed.html" class="brand">
-      <div class="brandLogo"><img src="logo.png" alt="OnlyPaws"></div>
-      <span>OnlyPaws</span>
-    </a>
+  <a href="feed.html" class="brand">
+    <div class="brandLogo"><img src="logo.png"></div>
+    <span>OnlyPaws</span>
+  </a>
+
+  <div class="navRight">
     <div class="pill" id="rolePill">Profile</div>
+
+    <a class="navBtn" id="dashTopLink" href="#" style="display:none;">Dashboard</a>
+    <a class="navBtn" href="feed.html">Feed</a>
+    <button class="navBtn" id="logoutBtn">Log out</button>
   </div>
+</div>
+
 
   <div class="panel">
     <div class="row">
@@ -87,10 +112,8 @@
         <h1>Your profile</h1>
         <p class="sub">Set your basics + avatar.</p>
       </div>
-      <div class="btnRow">
-        <a class="ghost" href="feed.html">Go to feed</a>
-        <button class="ghost" id="logoutBtn" type="button">Log out</button>
-      </div>
+
+     
     </div>
 
     <div class="field">
@@ -114,14 +137,6 @@
     <div class="field"><label>Username</label><input id="username"></div>
     <div class="field"><label>Bio</label><textarea id="bio"></textarea></div>
 
-    <div class="field" id="creatorTools" style="display:none;">
-      <label>Creator tools</label>
-      <div class="toolRow">
-        <a class="ghost" id="dashboardLink" href="creator-dash.html">Go to dashboard</a>
-        <a class="ghost" id="petsLink" href="pets.html">Manage pets</a>
-      </div>
-    </div>
-
     <div class="btnRow">
       <button class="btn" id="saveBtn" type="button">Save profile</button>
     </div>
@@ -136,10 +151,10 @@
     </div>
   </div>
 
-    <footer>
-      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
-      <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
-    </footer>
+  <footer>
+    © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+    <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+  </footer>
 
 </div>
 
@@ -170,10 +185,7 @@
   const avatarHint = document.getElementById("avatarHint");
 
   const logoutBtn = document.getElementById("logoutBtn");
-
-  const creatorTools = document.getElementById("creatorTools");
-  const dashboardLink = document.getElementById("dashboardLink");
-  const petsLink = document.getElementById("petsLink");
+  const dashTopLink = document.getElementById("dashTopLink");
 
   function setMsg(t){ msg.textContent = t || ""; }
   function setDeleteMsg(t){ deleteMsg.textContent = t || ""; }
@@ -234,7 +246,6 @@
     }
 
     if(!prof){
-      // If for some reason the profile row is missing, create a minimal one (idempotent for this user)
       const { error: insErr } = await onlypawsClient
         .from("profiles")
         .upsert({ user_id: session.user.id, role: "fan" }, { onConflict: "user_id" });
@@ -242,7 +253,6 @@
         setMsg("❌ Could not create profile: " + insErr.message);
         return;
       }
-      // reload fresh
       const again = await onlypawsClient
         .from("profiles")
         .select("user_id, display_name, username, bio, role, avatar_url")
@@ -255,9 +265,12 @@
       prof = again.data;
     }
 
-
     const role = prof?.role || "fan";
     rolePill.textContent = `Profile • ${role}`;
+
+    // Dashboard only top-right everywhere
+    dashTopLink.style.display = "inline-flex";
+    dashTopLink.href = (role === "creator") ? "creator-dash.html" : "fan-dash.html";
 
     displayNameEl.value = prof?.display_name || "";
     usernameEl.value = prof?.username || "";
@@ -265,11 +278,6 @@
 
     const a = (prof?.avatar_url || "").trim();
     avatarImg.src = a ? a : "logo.png";
-
-    const isCreator = role === "creator";
-    creatorTools.style.display = isCreator ? "block" : "none";
-    dashboardLink.style.display = isCreator ? "inline-flex" : "none";
-    petsLink.style.display = isCreator ? "inline-flex" : "none";
 
     setHint("Upload an image to change your avatar.");
   }
@@ -368,33 +376,32 @@
   });
 
   async function deleteAccount(){
-  setDeleteMsg("");
+    setDeleteMsg("");
 
-  if(!confirm("Delete account permanently?")) return;
-  if(prompt("Type DELETE to confirm") !== "DELETE"){
-    setDeleteMsg("Cancelled.");
-    return;
+    if(!confirm("Delete account permanently?")) return;
+    if(prompt("Type DELETE to confirm") !== "DELETE"){
+      setDeleteMsg("Cancelled.");
+      return;
+    }
+
+    deleteBtn.disabled = true;
+    setDeleteMsg("Deleting…");
+
+    try{
+      const { error } = await onlypawsClient.functions.invoke("delete-profile", {
+        body: { confirm: true },
+      });
+      if(error) throw error;
+
+      try { await onlypawsClient.auth.signOut(); } catch(e) {}
+      goIndex();
+    }catch(e){
+      setDeleteMsg("❌ " + (e?.message || String(e)));
+      deleteBtn.disabled = false;
+    }
   }
 
-  deleteBtn.disabled = true;
-  setDeleteMsg("Deleting…");
-
-  try{
-    const { error } = await onlypawsClient.functions.invoke("delete-profile", {
-      body: { confirm: true },
-    });
-    if(error) throw error;
-
-    try { await onlypawsClient.auth.signOut(); } catch(e) {}
-    goIndex();
-  }catch(e){
-    setDeleteMsg("❌ " + (e?.message || String(e)));
-    deleteBtn.disabled = false;
-  }
-}
-
-deleteBtn.addEventListener("click", deleteAccount);
-
+  deleteBtn.addEventListener("click", deleteAccount);
 
   logoutBtn.addEventListener("click", async () => {
     try{ await onlypawsClient.auth.signOut(); }catch(e){}
