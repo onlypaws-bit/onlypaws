@@ -116,7 +116,7 @@
     }
     .ghost:hover{transform: translateY(-1px) scale(1.01)}
 
-    /* RIGHT PANEL IMAGE (the missing part ✅) */
+    /* RIGHT PANEL IMAGE */
     .brandImage{
       border-radius:18px;
       background: rgba(255,255,255,.08);
@@ -133,14 +133,13 @@
       margin:0 auto;
     }
 
-    /* Cards */
-    .grid{
-      margin-top: 16px;
+    /* Cards (used inside LEFT panel now) */
+    .cardsStack{
+      margin-top:16px;
       display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 14px;
     }
-    @media (max-width: 920px){ .grid{grid-template-columns:1fr;} }
     .card{
       border-radius:22px;
       padding:18px;
@@ -183,7 +182,7 @@
     </div>
 
     <div class="hero">
-      <!-- LEFT: simple “landing” (as you wanted) -->
+      <!-- LEFT -->
       <div class="panel">
         <div class="pill">Cute content. Serious platform.</div>
         <h1>OnlyPaws</h1>
@@ -192,10 +191,25 @@
           Creators publish exclusive content, fans subscribe to support and enjoy it — all in one place.
         </p>
 
-        <div class="btnRow">
-          <a class="btn" href="feed.html">Explore the feed →</a>
-          <a class="ghost" href="fans.html">Log in / Sign up (Fan)</a>
-          <a class="ghost" href="creators.html">Log in / Sign up (Creator)</a>
+        <!-- moved cards here (replacing the 3 top buttons) -->
+        <div class="cardsStack">
+          <div class="card">
+            <h2>For fans</h2>
+            <p>Subscribe to your favorite pet creators and unlock exclusive content.</p>
+            <div class="btnRow" style="margin-top:12px;">
+              <a class="btn" href="fans.html">Fan area →</a>
+              <a class="ghost" href="faq-fans.html">Fan FAQ</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>For creators</h2>
+            <p>Build your creator profile, publish posts, and monetize with subscriptions.</p>
+            <div class="btnRow" style="margin-top:12px;">
+              <a class="btn" href="creators.html">Creator area →</a>
+              <a class="ghost" href="faq-creators.html">Creator FAQ</a>
+            </div>
+          </div>
         </div>
 
         <div class="mini" style="margin-top:16px;">
@@ -203,7 +217,7 @@
         </div>
       </div>
 
-      <!-- RIGHT: keep the photo + support block vibe -->
+      <!-- RIGHT -->
       <div class="panel">
         <div class="brandImage">
           <img src="onlypaws-index.png" alt="OnlyPaws thumbnail" />
@@ -211,13 +225,9 @@
 
         <h2 style="margin:14px 0 10px;">Support OnlyPaws</h2>
         <p class="sub" style="font-size:1rem;">
-    Support OnlyPaws 🐾
-
-This is a recurring support contribution billed every 3 months.
-It does not unlock any features or memberships.
-
-It simply helps us keep OnlyPaws alive, improve the platform,
-and take care of our furry friends 💜
+          Support OnlyPaws 🐾 This is a recurring support contribution billed every 3 months.
+          It does not unlock any features or memberships. It simply helps us keep OnlyPaws alive,
+          improve the platform, and take care of our furry friends 💜
         </p>
 
         <a class="btn"
@@ -229,26 +239,6 @@ and take care of our furry friends 💜
 
         <div style="margin-top:10px;color:rgba(255,255,255,.78);font-size:13px;line-height:1.5;">
           Cancel anytime • Secure payments via Stripe
-        </div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>For fans</h2>
-        <p>Subscribe to your favorite pet creators and unlock exclusive content.</p>
-        <div class="btnRow" style="margin-top:12px;">
-          <a class="btn" href="fans.html">Fan area →</a>
-          <a class="ghost" href="faq-fans.html">Fan FAQ</a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>For creators</h2>
-        <p>Build your creator profile, publish posts, and monetize with subscriptions.</p>
-        <div class="btnRow" style="margin-top:12px;">
-          <a class="btn" href="creators.html">Creator area →</a>
-          <a class="ghost" href="faq-creators.html">Creator FAQ</a>
         </div>
       </div>
     </div>
