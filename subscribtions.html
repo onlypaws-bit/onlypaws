@@ -369,6 +369,29 @@
       return data?.id ?? null;
     }
 
+    // ✅ check connect status (server verifies on Stripe)
+    async function getCreatorConnectStatus(){
+      const c = supa();
+      const { data:{ session } } = await c.auth.getSession();
+      if(!session) return null;
+
+      const res = await fetch(`${c.supabaseUrl}/functions/v1/connect-status`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // keep POST consistent
+      });
+
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok){
+        console.error("connect-status error:", data);
+        throw new Error(data?.error || "Failed to check creator status");
+      }
+      return data;
+    }
+
     async function startCheckout({ creator_id, plan_id }){
       const c = supa();
       const { data:{ session } } = await c.auth.getSession();
@@ -396,7 +419,7 @@
 
       const data = await res.json().catch(()=> ({}));
       if(!res.ok){
-        console.error(data);
+        console.error("create-checkout-session error:", data);
         throw new Error(data?.error || "Checkout failed");
       }
       if(!data?.url) throw new Error("Missing checkout url");
@@ -439,11 +462,40 @@
       const label = await getCreatorLabel();
       subline.textContent = label ? `Creator: @${label}` : `Creator: ${shortId(CREATOR_ID)}`;
 
+      // ✅ optional: pre-disable buttons if creator not ready (better UX)
+      try{
+        const status = await getCreatorConnectStatus();
+        if(!status?.ready){
+          setButtonsBusy(true, "Creator not ready");
+          // still allow page to load; user just can't checkout
+          // you can show a nicer hint:
+          // toast("Creator must enable payouts before subscribing");
+        }
+      }catch(e){
+        console.warn("connect-status failed:", e);
+        // don't hard-block the UI if status check fails
+      }
+
       document.querySelectorAll(".plan").forEach(planEl=>{
         const btn = planEl.querySelector(".btn");
         btn.addEventListener("click", async ()=>{
           try{
+            setButtonsBusy(true, "Checking…");
+
+            // ✅ hard guard on click too
+            const status = await getCreatorConnectStatus();
+            if(!status?.ready){
+              if(status?.reason === "missing_stripe_connect_account_id"){
+                toast("Creator has not enabled payouts yet 🐾");
+              }else{
+                toast("Creator must complete payout setup before subscribing");
+              }
+              setButtonsBusy(false, "Subscribe");
+              return;
+            }
+
             setButtonsBusy(true, "Redirecting…");
+
             const price = Number(planEl.dataset.price);
             const planId = await loadPlanIdByPrice(price);
 
@@ -462,7 +514,11 @@
         });
       });
 
-      setButtonsBusy(false, "Subscribe");
+      // only re-enable if not already disabled by "not ready"
+      // (if disabled, the click handler will keep it safe anyway)
+      // This keeps original behavior but doesn't overwrite "Creator not ready"
+      const anyDisabled = Array.from(document.querySelectorAll(".plan .btn")).some(b => b.disabled);
+      if(!anyDisabled) setButtonsBusy(false, "Subscribe");
     }
 
     (function(){
