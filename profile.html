@@ -96,11 +96,10 @@
   </a>
 
   <div class="navRight">
-    <div class="pill" id="rolePill">Profile</div>
+    <div class="pill" id="userPill">…</div>
 
     <a class="navBtn" id="dashTopLink" href="#" style="display:none;">Dashboard</a>
-    <a class="navBtn" href="feed.html">Feed</a>
-    <button class="navBtn" id="logoutBtn">Log out</button>
+    <button class="navBtn" id="logoutBtn" type="button">Log out</button>
   </div>
 </div>
 
@@ -169,7 +168,7 @@
   const deleteBtn = document.getElementById("deleteBtn");
 
   const emailPill = document.getElementById("emailPill");
-  const rolePill = document.getElementById("rolePill");
+  const userPill = document.getElementById("userPill");
 
   const emailEl = document.getElementById("email");
   const displayNameEl = document.getElementById("display_name");
@@ -191,7 +190,26 @@
   function setDeleteMsg(t){ deleteMsg.textContent = t || ""; }
   function setHint(t){ avatarHint.textContent = t || ""; }
 
-  function goIndex(){
+  
+
+  function hydrateUserPillFromProfile(prof, email){
+    try{
+      const uname = (prof?.username || "").trim();
+      const dname = (prof?.display_name || "").trim();
+
+      if(uname){
+        userPill.textContent = "@" + uname;
+      }else if(dname){
+        userPill.textContent = dname;
+      }else if(email){
+        userPill.textContent = email.split("@")[0];
+      }else{
+        userPill.textContent = "User";
+      }
+    }catch(e){}
+  }
+
+function goIndex(){
     window.location.replace("index.html");
   }
 
@@ -266,9 +284,8 @@
     }
 
     const role = prof?.role || "fan";
-    rolePill.textContent = `Profile • ${role}`;
-
-    // Dashboard only top-right everywhere
+    hydrateUserPillFromProfile(prof, email);
+// Dashboard only top-right everywhere
     dashTopLink.style.display = "inline-flex";
     dashTopLink.href = (role === "creator") ? "creator-dash.html" : "fan-dash.html";
 
