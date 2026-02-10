@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OnlyPaws — Choose your plan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root{
+      --bg1:#6B4EFF;
+      --bg2:#8B6CFF;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.85);
+      --stroke:rgba(255,255,255,.16);
+      --card:rgba(0,0,0,.16);
+      --shadow: rgba(0,0,0,.25);
+      --btn:#ffffff;
+      --btnText:#6B4EFF;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(1000px 650px at 90% 30%, rgba(0,0,0,.22), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 24px;
+      width:100%;
+      flex:1;
+    }
+
+    /* NAV */
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:14px;margin-bottom:18px;
+      position:sticky; top:0;
+      padding:10px 0;
+      backdrop-filter: blur(10px);
+      z-index:10;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+      text-decoration:none;color:white;font-weight:900;letter-spacing:.2px;user-select:none;
+    }
+    .brandLogo{
+      width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;
+      transition: transform .18s ease; overflow:hidden;
+    }
+    .brand:hover .brandLogo{transform: translateY(-1px) scale(1.02);}
+    .brandLogo img{width:42px;height:42px;object-fit:contain;}
+    .navRight{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+    .navBtn{
+      padding:10px 14px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      color:white;text-decoration:none;font-weight:900;font-size:13px;
+      cursor:pointer; user-select:none;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      white-space:nowrap;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22);}
+    .navBtn.primary{
+      background:var(--btn);
+      color:var(--btnText);
+      border:none;
+      box-shadow:0 14px 30px rgba(0,0,0,.2);
+    }
+    .navBtn.primary:hover{transform: translateY(-1px) scale(1.01);}
+    .navBtn:active{transform: translateY(0px) scale(.99);}
+
+    /* PANEL */
+    .panel{
+      border-radius:22px;padding:22px;
+      background:var(--card);
+      border:1px solid var(--stroke);
+      backdrop-filter: blur(10px);
+      box-shadow:0 20px 45px var(--shadow);
+    }
+
+    h1{
+      text-align:center;
+      margin:8px 0 10px;
+      font-size:clamp(1.8rem,4vw,2.4rem);
+      letter-spacing:-.3px
+    }
+    .subline{
+      text-align:center;
+      margin:0 0 18px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:13px
+    }
+
+    /* PLANS */
+    .plans{display:grid;grid-template-columns:1fr;gap:14px}
+    @media(min-width:900px){.plans{grid-template-columns:repeat(3,1fr)}}
+
+    .plan{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:22px;
+      padding:22px;
+      padding-top:64px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      position:relative;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease, box-shadow .16s ease;
+      will-change: transform;
+      min-height: 420px;
+      overflow: visible;
+    }
+    .plan:hover{
+      transform: translateY(-2px) scale(1.01);
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.24);
+      box-shadow: 0 26px 55px rgba(0,0,0,.28);
+    }
+    .plan:active{ transform: translateY(0px) scale(.995); }
+
+    .plan.featured{
+      background:linear-gradient(180deg, rgba(107,78,255,.90), rgba(139,108,255,.90));
+    }
+    .plan.featured:hover{
+      transform: translateY(-3px) scale(1.015);
+      box-shadow: 0 30px 65px rgba(0,0,0,.30);
+    }
+
+    /* Sticker icon */
+    .planIcon{
+      position:absolute;
+      top:-42px;
+      left:50%;
+      transform:translateX(-50%);
+      width:84px;
+      height:auto;
+      pointer-events:none;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+      will-change: transform;
+    }
+    .planIcon-big{ width:94px; }
+
+    .plan-big{ transform: scale(1.03); }
+    .plan-big:hover{ transform: scale(1.06) translateY(-2px); }
+
+    @keyframes pawFloat{
+      0%   { transform: translateX(-50%) translateY(0px) rotate(-0.6deg); }
+      50%  { transform: translateX(-50%) translateY(-6px) rotate(0.6deg); }
+      100% { transform: translateX(-50%) translateY(0px) rotate(-0.6deg); }
+    }
+    .plan:hover .planIcon{ animation: pawFloat 1.25s ease-in-out infinite; }
+    .plan:active .planIcon{
+      animation:none;
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    .plan h2{margin:0;font-size:1.55rem}
+    .tag{font-weight:900;color:var(--muted)}
+    .desc{color:rgba(255,255,255,.9);line-height:1.5;margin:0}
+    .list{padding-left:18px;margin:0;color:rgba(255,255,255,.92)}
+    .list li{margin-bottom:6px}
+    .price{font-size:2rem;font-weight:900}
+    .micro{margin-top:-6px;color:rgba(255,255,255,.85);font-size:12px;font-weight:800}
+
+    .btn{
+      margin-top:auto;
+      padding:12px 16px;
+      border-radius:999px;
+      background:var(--btn);
+      color:var(--btnText);
+      border:none;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(0,0,0,.25);
+      transition: transform .16s ease, opacity .16s ease;
+    }
+    .btn:hover{ transform: translateY(-1px) scale(1.01); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn[disabled]{opacity:.6;cursor:not-allowed}
+
+    /* Footer EXACT like index.html */
+    footer{
+      margin-top:22px;
+      color: rgba(255,255,255,.75);
+      font-size: 13px;
+      text-align:center;
+      padding: 0 18px 26px;
+      border-top:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.08);
+      backdrop-filter: blur(10px);
+    }
+    .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
+
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.18);
+      backdrop-filter: blur(10px);
+      color:#fff;
+      padding:10px 14px;border-radius:14px;
+      font-size:13px;font-weight:800;
+      box-shadow:0 20px 45px rgba(0,0,0,.25);
+      display:none;
+      max-width:min(520px,92vw);
+      text-align:center;
+      z-index: 100;
+    }
+    .toast.show{display:block}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="nav">
+      <a href="feed.html" class="brand">
+        <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
+        <span>OnlyPaws</span>
+      </a>
+
+      <div class="navRight">
+        <a class="navBtn" href="feed.html">Feed</a>
+        <a class="navBtn primary" href="profile.html">Profile</a>
+        <button class="navBtn" id="logoutBtn" type="button">Log out</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h1>Choose your plan 🐾</h1>
+      <div class="subline" id="subline">Loading…</div>
+
+      <div class="plans" id="plans">
+        <div class="plan" data-price="3">
+          <img class="planIcon" src="paw-stars.png" alt="Paw-fessional">
+          <h2>The Paw-fessional</h2>
+          <div class="tag">Join the crew</div>
+          <p class="desc">Perfect if you just want to peek behind the scenes and support the journey 💜</p>
+          <ul class="list">
+            <li>early access to posts</li>
+            <li>community access</li>
+            <li>priority reactions</li>
+          </ul>
+          <div class="price">€3 / month</div>
+          <div class="micro">less than a coffee ☕</div>
+          <button class="btn" type="button">Subscribe</button>
+        </div>
+
+        <div class="plan featured" data-price="5">
+          <img class="planIcon" src="paw-crown.png" alt="VIPaws">
+          <h2>VIPaws</h2>
+          <div class="tag">Stay one paw ahead</div>
+          <p class="desc">Extra content, more interaction, real influence 🐶✨</p>
+          <ul class="list">
+            <li>everything in Paw-fessional</li>
+            <li>exclusive monthly content</li>
+            <li>bloopers &amp; polls</li>
+            <li>monthly Q&amp;A</li>
+          </ul>
+          <div class="price">€5 / month</div>
+          <div class="micro">best value 🐾</div>
+          <button class="btn" type="button">Subscribe</button>
+        </div>
+
+        <div class="plan plan-big" data-price="8">
+          <img class="planIcon planIcon-big" src="paw-diamond.png" alt="Snuggle Buddy">
+          <h2>Ultimate Snuggle Buddy</h2>
+          <div class="tag">Maximum tail wags</div>
+          <p class="desc">For true fans who want a closer connection 🥹</p>
+          <ul class="list">
+            <li>everything in VIPaws</li>
+            <li>special shout-outs</li>
+            <li>personalized moments</li>
+            <li>virtual meet &amp; greet</li>
+          </ul>
+          <div class="price">€8 / month</div>
+          <div class="micro">for true fans 🐶💜</div>
+          <button class="btn" type="button">Subscribe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+    <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+    <br/><br/>
+    <a href="content-policy.html" style="color:white;text-decoration:underline;">Content Policy</a>
+    &nbsp;·&nbsp;
+    <a href="privacy-policy.html" style="color:white;text-decoration:underline;">Privacy Policy</a>
+    &nbsp;·&nbsp;
+    <a href="terms.html" style="color:white;text-decoration:underline;">Terms of Service</a>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+
+  <script>
+    function supa(){
+      return window.onlypawsClient || (typeof onlypawsClient !== "undefined" ? onlypawsClient : null);
+    }
+    function goIndex(){ window.location.replace("index.html"); }
+
+    const CREATOR_ID = new URLSearchParams(location.search).get("creator");
+    const PRICE_TO_CENTS = { 3:300, 5:500, 8:800 };
+
+    const subline = document.getElementById("subline");
+    const toastEl = document.getElementById("toast");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function toast(msg){
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 2600);
+    }
+
+    function setButtonsBusy(isBusy, txt){
+      document.querySelectorAll(".plan .btn").forEach(b=>{
+        b.disabled = !!isBusy;
+        if (txt) b.textContent = txt;
+      });
+    }
+
+    function shortId(id){
+      if(!id) return "";
+      return id.slice(0,6) + "…" + id.slice(-4);
+    }
+
+    async function getCreatorLabel(){
+      const c = supa();
+      const { data, error } = await c
+        .from("profiles")
+        .select("username, display_name")
+        .eq("user_id", CREATOR_ID)
+        .maybeSingle();
+
+      if(error) return null;
+      return data?.display_name || data?.username || null;
+    }
+
+    async function loadPlanIdByPrice(price){
+      const c = supa();
+      const cents = PRICE_TO_CENTS[price];
+      if(!cents) return null;
+
+      const { data, error } = await c
+        .from("creator_plans")
+        .select("id")
+        .eq("creator_id", CREATOR_ID)
+        .eq("price_cents", cents)
+        .eq("billing_period", "monthly")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if(error) throw error;
+      return data?.id ?? null;
+    }
+
+    // ✅ check connect status (server verifies on Stripe)
+    async function getCreatorConnectStatus(){
+      const c = supa();
+      const { data:{ session } } = await c.auth.getSession();
+      if(!session) return null;
+
+      const res = await fetch(`${c.supabaseUrl}/functions/v1/connect-status`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}), // keep POST consistent
+      });
+
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok){
+        console.error("connect-status error:", data);
+        throw new Error(data?.error || "Failed to check creator status");
+      }
+      return data;
+    }
+
+    async function startCheckout({ creator_id, plan_id }){
+      const c = supa();
+      const { data:{ session } } = await c.auth.getSession();
+      if(!session){
+        toast("Please login first");
+        setTimeout(goIndex, 700);
+        return;
+      }
+
+      const FUNCTIONS_BASE = `${c.supabaseUrl}/functions/v1`;
+
+      const res = await fetch(`${FUNCTIONS_BASE}/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          creator_id,
+          plan_id,
+          success_path: `/creator-profile.html?u=${creator_id}`,
+          cancel_path: `/subscribers.html?creator=${creator_id}`,
+        }),
+      });
+
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok){
+        console.error("create-checkout-session error:", data);
+        throw new Error(data?.error || "Checkout failed");
+      }
+      if(!data?.url) throw new Error("Missing checkout url");
+      window.location.href = data.url;
+    }
+
+    async function boot(){
+      const c = supa();
+      if(!c || !c.auth){
+        setButtonsBusy(true, "Subscribe");
+        subline.textContent = "—";
+        toast("Config error");
+        return;
+      }
+
+      if(!CREATOR_ID){
+        setButtonsBusy(true, "Subscribe");
+        subline.textContent = "—";
+        toast("Missing creator");
+        return;
+      }
+
+      logoutBtn.addEventListener("click", async () => {
+        logoutBtn.disabled = true;
+        logoutBtn.textContent = "Logging out…";
+        try { await c.auth.signOut(); } catch(e) {}
+        goIndex();
+      });
+
+      const { data:{ session } } = await c.auth.getSession();
+      if(!session){
+        toast("Please login first");
+        subline.textContent = "Please login to subscribe";
+        document.querySelectorAll(".plan .btn").forEach(btn=>{
+          btn.addEventListener("click", ()=> goIndex());
+        });
+        return;
+      }
+
+      const label = await getCreatorLabel();
+      subline.textContent = label ? `Creator: @${label}` : `Creator: ${shortId(CREATOR_ID)}`;
+
+      // ✅ optional: pre-disable buttons if creator not ready (better UX)
+      try{
+        const status = await getCreatorConnectStatus();
+        if(!status?.ready){
+          setButtonsBusy(true, "Creator not ready");
+          // still allow page to load; user just can't checkout
+          // you can show a nicer hint:
+          // toast("Creator must enable payouts before subscribing");
+        }
+      }catch(e){
+        console.warn("connect-status failed:", e);
+        // don't hard-block the UI if status check fails
+      }
+
+      document.querySelectorAll(".plan").forEach(planEl=>{
+        const btn = planEl.querySelector(".btn");
+        btn.addEventListener("click", async ()=>{
+          try{
+            setButtonsBusy(true, "Checking…");
+
+            // ✅ hard guard on click too
+            const status = await getCreatorConnectStatus();
+            if(!status?.ready){
+              if(status?.reason === "missing_stripe_connect_account_id"){
+                toast("Creator has not enabled payouts yet 🐾");
+              }else{
+                toast("Creator must complete payout setup before subscribing");
+              }
+              setButtonsBusy(false, "Subscribe");
+              return;
+            }
+
+            setButtonsBusy(true, "Redirecting…");
+
+            const price = Number(planEl.dataset.price);
+            const planId = await loadPlanIdByPrice(price);
+
+            if(!planId){
+              toast("Plan not available");
+              setButtonsBusy(false, "Subscribe");
+              return;
+            }
+
+            await startCheckout({ creator_id: CREATOR_ID, plan_id: planId });
+          }catch(e){
+            console.error(e);
+            toast(e?.message || String(e));
+            setButtonsBusy(false, "Subscribe");
+          }
+        });
+      });
+
+      // only re-enable if not already disabled by "not ready"
+      // (if disabled, the click handler will keep it safe anyway)
+      // This keeps original behavior but doesn't overwrite "Creator not ready"
+      const anyDisabled = Array.from(document.querySelectorAll(".plan .btn")).some(b => b.disabled);
+      if(!anyDisabled) setButtonsBusy(false, "Subscribe");
+    }
+
+    (function(){
+      const c = supa();
+      if(!c?.auth) return;
+      c.auth.onAuthStateChange((event) => {
+        if(event === "SIGNED_OUT") goIndex();
+      });
+    })();
+
+    boot();
+  </script>
+</body>
+</html>
