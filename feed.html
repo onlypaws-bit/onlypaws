@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OnlyPaws — Feed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root{
+      --bg1:#6B4EFF;
+      --bg2:#8B6CFF;
+      --text:#ffffff;
+      --muted:rgba(255,255,255,.85);
+      --stroke:rgba(255,255,255,.16);
+      --card:rgba(0,0,0,.16);
+      --btn:#ffffff;
+      --btnText:#6B4EFF;
+      --shadow: rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.18), transparent 55%),
+        radial-gradient(1000px 650px at 90% 30%, rgba(0,0,0,.22), transparent 55%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+    }
+    .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 70px;}
+
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:white;font-weight:900;letter-spacing:.2px;user-select:none;}
+    .brandLogo{
+      width:62px;height:62px;border-radius:14px;background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;overflow:hidden;
+      transition: transform .18s ease;
+    }
+    .brand:hover .brandLogo{transform: translateY(-1px) scale(1.02);}
+    .brandLogo img{width:46px;height:46px;object-fit:contain;}
+    .brandText{font-size:1.1rem;}
+
+    .navRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+    .navBtn{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);color:white;text-decoration:none;font-weight:900;
+      cursor:pointer; user-select:none; transition: transform .16s ease, background .16s ease, border-color .16s ease;
+      font-size:13px; white-space:nowrap;
+    }
+    .navBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22);}
+    .navBtn.primary{background:var(--btn);border:none;color:var(--btnText);box-shadow:0 14px 30px rgba(0,0,0,.20);}
+    .navBtn.primary:hover{transform: translateY(-1px) scale(1.01);}
+    .navBtn:active{transform: translateY(0px) scale(.99);}
+
+    .panel{
+      border-radius:22px;padding:22px;background:var(--card);
+      border:1px solid var(--stroke);backdrop-filter: blur(10px);
+      box-shadow:0 20px 45px var(--shadow);
+    }
+
+    h1{
+      margin:10px 0 10px;
+      font-size: clamp(2rem, 4vw, 2.6rem);
+      line-height:1.05; letter-spacing:-0.6px;
+    }
+    .sub{margin:0;color:var(--muted);font-size:1.05rem;line-height:1.55;max-width:65ch;}
+
+    .searchRow{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .search{
+      flex:1;min-width:240px;padding:12px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.12);color:white;outline:none;
+    }
+    .search::placeholder{color: rgba(255,255,255,.65);}
+
+    .subtleLine{margin-top:12px;color:rgba(255,255,255,.70);font-size:13px;}
+    .subtleLine a{color:rgba(255,255,255,.85);text-decoration:underline;}
+
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:10px 14px;border-radius:999px;
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:13px;color:rgba(255,255,255,.85);
+      white-space:nowrap;
+    }
+
+    .hint{color:rgba(255,255,255,.78);font-size:13px;line-height:1.4;margin-top:12px;}
+
+    /* Creators */
+    .creatorList{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    @media (max-width: 920px){ .creatorList{grid-template-columns:1fr;} }
+
+    .creatorLink{text-decoration:none;color:inherit;display:block;border-radius:18px;outline:none;}
+    .creatorCard{
+      border-radius:18px;padding:14px;background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      display:flex;gap:12px;align-items:center;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .creatorLink:hover .creatorCard{transform: translateY(-1px);background: rgba(255,255,255,.13);border-color: rgba(255,255,255,.22);}
+    .creatorLink:active .creatorCard{transform: translateY(0px) scale(.995);}
+    .creatorLink:focus-visible .creatorCard{outline:2px solid rgba(255,255,255,.55);outline-offset:3px;}
+
+    .avatar{
+      width:48px;height:48px;border-radius:16px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;
+      flex:0 0 auto;font-size:20px;overflow:hidden;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+    .creatorCard b{display:block}
+    .creatorCard span{display:block;color:rgba(255,255,255,.78);font-size:13px;margin-top:2px;}
+
+    /* Posts */
+    .postsHeader{margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .postsHeader h2{margin:0;font-size:1.15rem;}
+    .posts{margin-top:12px;display:grid;grid-template-columns:1fr;gap:12px;}
+    .postCard{
+      border-radius:22px;padding:18px;background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.16);
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .postCard:hover{transform: translateY(-1px);background: rgba(255,255,255,.12);border-color: rgba(255,255,255,.22);}
+    .postTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.16);
+      font-size:12px;font-weight:900;white-space:nowrap;
+    }
+    .postCard h3{margin:10px 0 8px;font-size:1.15rem;}
+    .postCard p{margin:0;color:rgba(255,255,255,.86);line-height:1.55;white-space:pre-wrap;}
+
+    .mediaWrap{
+      margin-top:12px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.18);position:relative;
+    }
+    .mediaWrap img,.mediaWrap video{width:100%;display:block;max-height:460px;object-fit:cover;}
+
+    footer{
+      margin-top:32px;
+      padding-bottom:22px;
+      color:rgba(255,255,255,.75);
+      font-size:13px;
+      text-align:center;
+      line-height:1.5;
+    }
+    .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
+
+    /* Debug pill */
+    .debug{
+      margin-top:12px;
+      border-radius:16px;
+      padding:12px 14px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.16);
+      color: rgba(255,255,255,.88);
+      font-size: 13px;
+      line-height: 1.45;
+      display:none;
+      white-space:pre-wrap;
+    }
+    .lockOverlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      gap:10px; flex-direction:column;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(2px);
+      padding:18px;
+      text-align:center;
+    }
+
+    .lockOverlay .navBtn{
+      background: var(--btn);
+      color: var(--btnText);
+      border: none;
+    }
+
+    .blurred img, .blurred video{
+      filter: blur(18px);
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <div class="nav">
+      <a href="feed.html" class="brand">
+        <div class="brandLogo"><img src="logo.png" alt="OnlyPaws logo"></div>
+        <span class="brandText">OnlyPaws</span>
+      </a>
+
+      <div class="navRight">
+        <a class="navBtn primary" id="navProfile" href="profile.html" style="display:none;">Profile</a>
+
+        <!-- FAN dashboard -->
+        <a class="navBtn" id="navFanDash" href="fan-dash.html" style="display:none;">Dashboard</a>
+
+        <!-- CREATOR dashboard -->
+        <a class="navBtn" id="navCreatorDash" href="creator-dash.html" style="display:none;">Dashboard</a>
+
+        <button class="navBtn" id="navLogout" type="button" style="display:none;">Log out</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h1>Feed</h1>
+      <p class="sub">Browse creators, discover cute content, and support what you love.</p>
+
+      <div class="searchRow">
+        <input id="searchInput" class="search" placeholder="Search creators (by name or @username)..." />
+      </div>
+
+      <div class="subtleLine">
+        Want to help keep OnlyPaws running?
+        <a target="_blank" href="https://buy.stripe.com/4gM14ocjm5qec9w04n5wI05">Support OnlyPaws</a>
+      </div>
+
+      <div id="debug" class="debug"></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="pill">Featured creators</div>
+      <div class="creatorList" id="creatorList"></div>
+      <div class="hint" id="creatorHint">Loading creators…</div>
+    </div>
+
+    <div class="panel" style="margin-top:14px;">
+      <div class="postsHeader">
+        <h2>Latest posts</h2>
+        <div class="hint" style="margin-top:0;">Visible posts (premium appears after purchase)</div>
+      </div>
+      <div class="posts" id="posts"></div>
+      <div class="hint" id="postsHint">Loading posts…</div>
+    </div>
+
+    <footer>
+      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+      <span class="smallLegal">OnlyPaws is an independent digital platform. Features may evolve over time.</span>
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+
+  <script>
+    let creatorsAll = [];
+
+    function goIndex(){ window.location.replace("index.html"); }
+
+    function show(el, yes){
+      if(!el) return;
+      el.style.display = yes ? "inline-flex" : "none";
+    }
+
+    function setDebug(msg){
+      const el = document.getElementById("debug");
+      if(!el) return;
+      if(!msg){
+        el.style.display = "none";
+        el.textContent = "";
+        return;
+      }
+      el.style.display = "block";
+      el.textContent = msg;
+    }
+
+    function esc(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function creatorProfileUrl(username){
+      return `creator-profile.html?u=${encodeURIComponent(username)}`;
+    }
+
+    function avatarHtml(c){
+      const url = (c?.avatar_url || "").trim();
+      if(url){
+        return `<img src="${esc(url)}" alt="Avatar" loading="lazy" decoding="async" referrerpolicy="no-referrer">`;
+      }
+      return "🐾";
+    }
+
+    function renderCreators(list){
+      const el = document.getElementById("creatorList");
+      if(!list || list.length === 0){
+        el.innerHTML = "";
+        return;
+      }
+      el.innerHTML = list.map(c => {
+        const name = c.display_name || c.username || "Creator";
+        const uname = c.username || "username";
+        const bio = c.bio || "";
+        return `
+          <a class="creatorLink" href="${creatorProfileUrl(uname)}" aria-label="Open ${esc(name)} profile">
+            <div class="creatorCard">
+              <div class="avatar">${avatarHtml(c)}</div>
+              <div>
+                <b>${esc(name)}</b>
+                <span>@${esc(uname)}${bio ? " • " + esc(bio).slice(0, 40) : ""}</span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join("");
+    }
+
+    function mediaBlock(p){
+      if(!p.media_url) return "";
+      const isVideo = p.media_type === "video";
+      const locked = p.is_locked === true;
+
+      const media = isVideo
+        ? `<video ${locked ? "" : "controls"} playsinline src="${esc(p.media_url)}"></video>`
+        : `<img src="${esc(p.media_url)}" alt="Post media">`;
+
+      if(!locked){
+        return `<div class="mediaWrap">${media}</div>`;
+      }
+
+      const uname = p?.profiles?.username || "creator";
+      const url = creatorProfileUrl(uname);
+
+      return `
+        <div class="mediaWrap blurred">
+          ${media}
+          <div class="lockOverlay">
+            <div class="badge">🔒 Subscribers / Premium</div>
+            <a class="navBtn primary" href="${url}">Open creator</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPosts(list){
+      const postsEl = document.getElementById("posts");
+      if(!list || list.length === 0){
+        postsEl.innerHTML = `
+          <div class="postCard">
+            <h3>No posts yet</h3>
+            <p>Creators will appear here once they publish.</p>
+          </div>
+        `;
+        return;
+      }
+
+      postsEl.innerHTML = list.map(p => {
+        const uname = p?.profiles?.username || "creator";
+        const who = `@${uname}`;
+        const title = p.title || "Post";
+        const content = (p.is_locked ? (p.preview || "Locked content.") : (p.content || p.preview || ""));
+        const paidBadge = p.is_paid ? "🔒 PREMIUM" : "🆓 FREE";
+
+        return `
+          <div class="postCard">
+            <div class="postTop">
+              <div class="badge">${esc(who)}</div>
+              <div class="badge">${paidBadge}</div>
+            </div>
+            <h3>${esc(title)}</h3>
+            ${mediaBlock(p)}
+            <p>${esc(content)}</p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function setupSearch(){
+      const input = document.getElementById("searchInput");
+      input.addEventListener("input", () => {
+        const q = (input.value || "").trim().toLowerCase();
+        if(!q){ renderCreators(creatorsAll); return; }
+        renderCreators(creatorsAll.filter(c => {
+          const name = (c.display_name || "").toLowerCase();
+          const uname = (c.username || "").toLowerCase();
+          return name.includes(q) || uname.includes(q);
+        }));
+      });
+    }
+
+    async function hydrateNavLoggedOnly(){
+      const profileBtn = document.getElementById("navProfile");
+      const logoutBtn  = document.getElementById("navLogout");
+      const fanDash     = document.getElementById("navFanDash");
+      const creatorDash = document.getElementById("navCreatorDash");
+
+      show(profileBtn, true);
+      show(logoutBtn, true);
+      show(fanDash, false);
+      show(creatorDash, false);
+
+      try{
+        const { data: u } = await onlypawsClient.auth.getUser();
+        const userId = u?.user?.id;
+        if(!userId) return;
+
+        const { data: p } = await onlypawsClient
+          .from("profiles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if(p?.role === "creator"){
+          show(creatorDash, true);
+        }else{
+          show(fanDash, true);
+        }
+      }catch(e){}
+    }
+
+    function setupLogout(){
+      const logoutBtn = document.getElementById("navLogout");
+      if(!logoutBtn) return;
+      if (logoutBtn.dataset.bound === "1") return;
+      logoutBtn.dataset.bound = "1";
+
+      logoutBtn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        logoutBtn.disabled = true;
+        logoutBtn.textContent = "Logging out…";
+        try { await onlypawsClient.auth.signOut(); } catch(e) {}
+        goIndex();
+      });
+    }
+
+    async function loadCreators(currentUserId){
+      const hint = document.getElementById("creatorHint");
+      hint.textContent = "Loading creators…";
+
+      const { data, error } = await onlypawsClient
+        .from("profiles")
+        .select("user_id, username, display_name, bio, role, avatar_url")
+        .eq("role", "creator")
+        .not("username", "is", null)
+        .limit(50);
+
+      if(error){
+        hint.textContent = "Could not load creators.";
+        setDebug(`Creators query failed:\n${error.message}\n(code: ${error.code || "?"})`);
+        console.error(error);
+        creatorsAll = [];
+        renderCreators([]);
+        return;
+      }
+
+      const filtered = (data || [])
+        .filter(c => (c.user_id || "") !== (currentUserId || ""))
+        .slice(0, 12);
+
+      creatorsAll = filtered.map(c => ({
+        user_id: c.user_id,
+        username: c.username,
+        display_name: c.display_name || c.username,
+        bio: c.bio || "",
+        avatar_url: c.avatar_url || ""
+      }));
+
+      renderCreators(creatorsAll);
+      hint.textContent = creatorsAll.length ? "" : "No creators yet.";
+    }
+
+    // ✅ FIXED: premium unlock rule + creator override
+    async function loadLatestPosts(){
+      const hint = document.getElementById("postsHint");
+      hint.textContent = "Loading posts…";
+
+      const { data: sess } = await onlypawsClient.auth.getSession();
+      const session = sess?.session;
+      const viewerId = session?.user?.id || null;
+
+      const { data, error } = await onlypawsClient
+        .from("posts")
+        .select("id, creator_id, title, content, preview, media_url, media_type, is_paid, is_public, created_at, profiles(username, display_name, avatar_url)")
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      if(error){
+        hint.textContent = "Could not load posts.";
+        setDebug((document.getElementById("debug").textContent ? document.getElementById("debug").textContent + "\n\n" : "") +
+          `Posts query failed:\n${error.message}\n(code: ${error.code || "?"})`
+        );
+        console.error(error);
+        renderPosts([]);
+        return;
+      }
+
+      const posts = data || [];
+
+      if(!viewerId){
+        const enriched = posts.map(p => {
+          const locked = (p.is_public === false) || (p.is_paid === true);
+          return { ...p, can_view: !locked, is_locked: locked };
+        });
+        renderPosts(enriched);
+        hint.textContent = enriched.length ? "" : "No posts yet.";
+        return;
+      }
+
+      const creatorIdsToCheck = [...new Set(
+        posts
+          .filter(p =>
+            p?.creator_id &&
+            p.creator_id !== viewerId &&
+            p.is_public !== false &&
+            p.is_paid === true
+          )
+          .map(p => p.creator_id)
+      )];
+
+      const subMap = new Map();
+      await Promise.all(creatorIdsToCheck.map(async (cid) => {
+        const { data: ok, error: e } = await onlypawsClient.rpc("is_subscribed_to", { p_creator_id: cid });
+        if(e){
+          console.warn("is_subscribed_to error", cid, e);
+          subMap.set(cid, false);
+          return;
+        }
+        subMap.set(cid, !!ok);
+      }));
+
+      const enriched = posts.map(p => {
+        const isMine = (p.creator_id === viewerId);
+
+        if(p.is_public === false){
+          const locked = !isMine;
+          return { ...p, can_view: !locked, is_locked: locked };
+        }
+
+        if(p.is_paid !== true){
+          return { ...p, can_view: true, is_locked: false };
+        }
+
+        const isSub = (subMap.get(p.creator_id) === true);
+        const locked = !(isMine || isSub);
+
+        return { ...p, can_view: !locked, is_locked: locked };
+      });
+
+      renderPosts(enriched);
+      hint.textContent = enriched.length ? "" : "No posts yet.";
+    }
+
+    async function boot(){
+      setupSearch();
+      setupLogout();
+
+      const { data, error } = await onlypawsClient.auth.getSession();
+      if(error){
+        setDebug(`Auth session error:\n${error.message}`);
+      }
+      const session = data?.session;
+
+      if(!session){
+        goIndex();
+        return;
+      }
+
+      await hydrateNavLoggedOnly();
+      await loadCreators(session.user.id);
+      await loadLatestPosts();
+    }
+
+    onlypawsClient.auth.onAuthStateChange((event) => {
+      if(event === "SIGNED_OUT") goIndex();
+    });
+
+    boot();
+  </script>
+</body>
+</html>

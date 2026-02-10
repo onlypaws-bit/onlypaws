@@ -1,0 +1,217 @@
+<!-- faq-fans.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OnlyPaws — Fan FAQ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+/* ===== OnlyPaws Header ===== */
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:28px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+  color:white;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+
+.brandLogo{
+  width:62px;
+  height:62px;
+  border-radius:14px;
+  background: rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.brandLogo img{
+  width:46px;
+  height:46px;
+  object-fit:contain;
+}
+
+.brandText{
+  font-size:1.1rem;
+}
+
+.pill{
+  padding:8px 14px;
+  border-radius:999px;
+  background: rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  font-size:13px;
+  color:rgba(255,255,255,.85);
+  white-space:nowrap;
+}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6B4EFF, #8B6CFF);
+      color:white;
+      min-height:100vh;
+      padding:28px 18px;
+    }
+    .wrap{max-width:820px;margin:0 auto;}
+    h1{margin-bottom:6px}
+    p.sub{color:rgba(255,255,255,.85);margin-bottom:22px}
+    .faq{
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:14px;
+    }
+    .faq h3{margin:0 0 6px;font-size:1.05rem}
+    .faq p{margin:0;color:rgba(255,255,255,.85);line-height:1.55}
+    footer{
+      margin-top:28px;
+      font-size:13px;
+      color:rgba(255,255,255,.75);
+      text-align:center;
+    }
+    a{color:white}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+<!-- HEADER -->
+<div class="nav">
+  <a href="index.html" class="brand">
+    <div class="brandLogo">
+      <img src="logo.png" alt="OnlyPaws logo">
+    </div>
+    <span class="brandText">OnlyPaws</span>
+  </a>
+  <div class="pill">Fan FAQ</div>
+</div>
+
+    <h1>Fan FAQ</h1>
+    <p class="sub">Everything you need to know as a fan on OnlyPaws.</p>
+
+    <div class="faq">
+      <h3>What is OnlyPaws?</h3>
+      <p>
+        OnlyPaws is a subscription platform where fans can support pet creators
+        and access exclusive content.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>How do fan subscriptions work?</h3>
+      <p>
+        Fans subscribe to individual creators and get access to subscriber-only content.
+        Billing is handled securely by Stripe.
+      </p>
+    </div>
+
+    <!-- UPDATED + EXPANDED: cancellation flow -->
+    <div class="faq">
+      <h3>How do I cancel a subscription?</h3>
+      <p>
+        You can cancel your subscription at any time directly from your account dashboard.
+      </p>
+      <p style="margin-top:10px;">
+        Go to <b>Dashboard → Subscription / Settings → Cancel subscription</b>.
+        No emails or support tickets are required.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>What happens after I cancel?</h3>
+      <p>
+        When you cancel, your subscription will not renew and you will not be charged again.
+        Your access will remain active until the end of the current billing period.
+      </p>
+      <p style="margin-top:10px;">
+        After the billing period ends, the subscription will automatically expire.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Will I get a refund if I cancel?</h3>
+      <p>
+        No. Payments already made are non-refundable.
+        You will continue to have full access until the end of the current billing period.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Can I reactivate my subscription after canceling?</h3>
+      <p>
+        Yes. You can reactivate your subscription at any time before the end of the current
+        billing period from your dashboard.
+      </p>
+      <p style="margin-top:10px;">
+        If the subscription has already expired, you can subscribe again at any time.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Is there a minimum commitment or cancellation fee?</h3>
+      <p>
+        No. There is no minimum commitment and no cancellation fee.
+        You are free to cancel whenever you want.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Does canceling delete my account or content?</h3>
+      <p>
+        No. Canceling a subscription only stops future billing.
+        Your account and content remain available according to your account type.
+      </p>
+    </div>
+    <!-- /cancellation flow -->
+
+    <div class="faq">
+      <h3>What kind of content will I see?</h3>
+      <p>
+        Content varies by creator and may include photos, videos, and behind-the-scenes moments.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Is OnlyPaws safe?</h3>
+      <p>
+        Payments are processed by Stripe, and the platform follows standard digital service practices.
+      </p>
+    </div>
+
+    <div class="faq">
+      <h3>Who do I contact for support?</h3>
+      <p>
+        For any issues or questions, contact us at <b>onlypawssupp@gmail.com</b>.
+      </p>
+    </div>
+
+    <footer>
+      © 2026 OnlyPaws • Built with toe beans energy 🐾<br/>
+      <span class="smallLegal">
+        OnlyPaws is an independent digital platform. Features may evolve over time.
+      </span>
+      <p>
+        <br/><br/><a href="content-policy.html" style="color:white;text-decoration:underline;">Content Policy</a>
+        &nbsp;·&nbsp;
+        <a href="privacy-policy.html" style="color:white;text-decoration:underline;">Privacy Policy</a>
+        &nbsp;·&nbsp;
+        <a href="terms.html" style="color:white;text-decoration:underline;">Terms of Service</a>
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>

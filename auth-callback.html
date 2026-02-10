@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OnlyPaws — Auth</title>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+
+  <script>
+    async function bootstrapUser(role){
+      const { data: uData, error: uErr } = await onlypawsClient.auth.getUser();
+      if(uErr) throw uErr;
+      const user = uData?.user;
+      if(!user) return;
+
+      const uid = user.id;
+      const now = new Date().toISOString();
+
+      await onlypawsClient
+        .from("profiles")
+        .upsert({ user_id: uid, role, updated_at: now }, { onConflict: "user_id" });
+
+      await onlypawsClient
+        .from("wallets")
+        .upsert({ profile_id: uid }, { onConflict: "profile_id" });
+
+      await onlypawsClient
+        .from("entitlements")
+        .upsert({
+          user_id: uid,
+          fan_membership: role === "fan",
+          creator_plan: role === "creator",
+          creator_membership: false,
+          updated_at: now
+        }, { onConflict: "user_id" });
+    }
+
+    (async () => {
+      try{
+        const { data: s } = await onlypawsClient.auth.getSession();
+        if(s?.session){
+          const role = s.session.user?.user_metadata?.role || "fan";
+          await bootstrapUser(role);
+        }
+      } catch(e){
+        console.warn("bootstrap skipped:", e);
+      }
+
+      const next = new URLSearchParams(window.location.search).get("next");
+      window.location.href = next || "profile.html";
+    })();
+  </script>
+</body>
+</html>
