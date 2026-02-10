@@ -560,11 +560,19 @@
       return data?.id || null;
     }
 
-    async function isSubscribedToCreator(creatorId){
-      const { data, error } = await onlypawsClient.rpc("is_subscribed_to", { p_creator_id: creatorId });
+    async function isSubscribedToCreator(creatorId, fanId){
+      if(!creatorId || !fanId) return false;
+      const { data, error } = await onlypawsClient
+        .from("creator_subscriptions")
+        .select("id, status, is_active, current_period_end")
+        .eq("creator_id", creatorId)
+        .eq("fan_id", fanId)
+        .eq("is_active", true)
+        .maybeSingle();
       if(error) throw error;
       return !!data;
     }
+
 
     function setupLogout(){
       const logoutBtn = document.getElementById("navLogout");
@@ -661,7 +669,7 @@
           creator.role === "creator" &&
           statusOk &&
           creator.charges_enabled === true &&
-          !!(creator.stripe_connect_account_id || "").toString().trim()
+          (String(creator.stripe_connect_account_id || "").trim().length > 0)
         );
 
         if(!creatorEligible){
@@ -672,7 +680,7 @@
         }
 
         // Initial load
-        let isSub = await isSubscribedToCreator(creator.user_id);
+        let isSub = await isSubscribedToCreator(creator.user_id, fanId);
 
         // ✅ after returning from Stripe, retry subscription check (webhook might be slightly delayed)
         if((success === "1" || session_id) && !isSub){
@@ -681,7 +689,7 @@
           for(const w of waits){
             await new Promise(r => setTimeout(r, w));
             try{
-              isSub = await isSubscribedToCreator(creator.user_id);
+              isSub = await isSubscribedToCreator(creator.user_id, fanId);
               if(isSub) break;
             }catch(e){}
           }
