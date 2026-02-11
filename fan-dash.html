@@ -104,6 +104,17 @@
       cursor:pointer;
       display:inline-flex;align-items:center;justify-content:center;
     }
+    .ghost.danger{
+      background: rgba(255, 80, 80, .18);
+      border-color: rgba(255, 120, 120, .28);
+      color: #ffd1d1;
+    }
+    .ghost.danger:hover{ background: rgba(255, 80, 80, .26); }
+    .ghost[disabled], .ghost.disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      pointer-events:none;
+    }
     .badge{
       font-size:12px;padding:6px 10px;border-radius:999px;
       border:1px solid rgba(255,255,255,.18);
@@ -121,7 +132,22 @@
       line-height:1.5;
     }
     .smallLegal{display:inline-block;margin-top:6px;opacity:.85;font-size:12px;}
-  </style>
+  .ghost.disabled,
+.ghost[aria-disabled="true"]{
+  opacity:.45;
+  cursor:not-allowed;
+  pointer-events:none;
+  filter:saturate(.2);
+}
+.pillSoon{
+  margin-left:10px;
+  padding:6px 10px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.2px;
+  opacity:.9;
+}
+</style>
 </head>
 
 <body>
@@ -167,7 +193,7 @@
       <div class="pill">My Access</div>
       <p class="sub" style="margin-top:10px;">Shortcuts to what you can view.</p>
       <div class="btnRow">
-        <a class="ghost" href="purchased-posts.html?scope=purchased">View purchased posts</a>
+        <button class="ghost disabled" type="button" disabled aria-disabled="true" title="Coming soon: Purchased posts">View purchased posts <span class="pill pillSoon">Soon</span></button>
       </div>
     </div>
   </div>
@@ -318,7 +344,7 @@
       const c = row.creator;
       const uname = (c?.username || "").trim();
       const dname = (c?.display_name || "").trim() || uname || "Creator";
-      const avatar = (c?.avatar_url || "").trim();
+      const avatar = (c?.avatar_url || "").trim(); 
 
       const el = document.createElement("div");
       el.className = "item";
@@ -336,33 +362,44 @@
     }
   }
 
-  async function loadSubscriptions(userId){
+  
+  async function cancelSubscription(stripeSubId, creatorLabel){
+    if(!stripeSubId) return;
+    const label = creatorLabel ? ` to ${creatorLabel}` : "";
+    if(!confirm(`Cancel subscription${label}? Access remains active until the end of the billing period.`)) return;
+
+    subsMsg.textContent = "Cancelling…";
+    try{
+      const { data: s } = await onlypawsClient.auth.getSession();
+      const token = s?.session?.access_token;
+      if(!token) throw new Error("No session");
+
+      const { error } = await onlypawsClient.functions.invoke("cancel-subscription", {
+        body: { stripe_subscription_id: stripeSubId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if(error) throw error;
+
+      subsMsg.textContent = "Cancellation requested. Updating…";
+      await loadSubscriptions(s.session.user.id);
+      subsMsg.textContent = "Done. Access remains until period end.";
+    }catch(e){
+      console.error(e);
+      subsMsg.textContent = "❌ Error canceling subscription. Check logs.";
+    }
+  }
+
+async function loadSubscriptions(userId){
     subsMsg.textContent = "Loading…";
     subsList.innerHTML = "";
 
-    const { data, error } = await onlypawsClient
-      .from("subscriptions")
-      .select(`
-        id,
-        status,
-        created_at,
-        current_period_end,
-        canceled_at,
-        creator:creator_id (
-          user_id,
-          username,
-          display_name,
-          avatar_url
-        ),
-        plan:plan_id (
-          id,
-          name,
-          price_cents,
-          currency,
-          billing_period
-        )
-      `)
+    const { data: rows, error } = await onlypawsClient
+      .from("creator_subscriptions")
+      .select("creator_id,status,is_active,created_at,current_period_end,stripe_subscription_id")
       .eq("fan_id", userId)
+      .eq("is_active", true)
+      .in("status", ["active","past_due"])
       .order("created_at", { ascending:false });
 
     if(error){
@@ -371,21 +408,31 @@
       return;
     }
 
-    if(!data || data.length === 0){
+    if(!rows || rows.length === 0){
       subsMsg.textContent = "";
       subsList.innerHTML = emptyItem("No subscriptions yet", "When you subscribe to a creator, it will appear here.");
       return;
     }
 
+    // load creator profiles (username/avatar)
+    const creatorIds = Array.from(new Set(rows.map(r => r.creator_id).filter(Boolean)));
+    const { data: profs, error: pErr } = await onlypawsClient
+      .from("profiles")
+      .select("user_id, username, display_name, avatar_url")
+      .in("user_id", creatorIds);
+
+    const pMap = new Map();
+    if(!pErr && Array.isArray(profs)){
+      for(const p of profs) pMap.set(p.user_id, p);
+    }
+
     subsMsg.textContent = "";
     subsList.innerHTML = "";
 
-    for(const row of data){
-      const c = row.creator;
-      const plan = formatPlan(row.plan);
-
+    for(const row of rows){
+      const c = pMap.get(row.creator_id) || {};
       const uname = (c?.username || "").trim();
-      const dname = (c?.display_name || "").trim() || uname || "Creator";
+      const dname = (c?.display_name || "").trim() || (uname ? ("@" + uname) : "") || "Creator";
       const avatar = (c?.avatar_url || "").trim();
 
       const status = (row.status || "active").toString();
@@ -400,10 +447,18 @@
 
       const metaLine = [
         uname ? ("@" + uname) : "",
-        plan?.name ? plan.name : "",
-        plan?.price ? plan.price : "",
         until ? ("until " + until) : ""
       ].filter(Boolean).join(" • ");
+
+
+      const canCancel = (status === "active" && row.stripe_subscription_id);
+
+      const cancelHtml = canCancel
+        ? `<button class="ghost danger" type="button" data-cancel-sub="${esc(row.stripe_subscription_id)}" data-cancel-label="${esc(dname)}">Cancel</button>`
+        : "";
+
+      const canOpen = !!uname;
+      const uParam = encodeURIComponent(uname || "");
 
       const el = document.createElement("div");
       el.className = "item";
@@ -417,12 +472,24 @@
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <span class="badge">${esc(badgeText)}</span>
-          ${c?.user_id ? `<a class="ghost" href="subscriptions.html?creator=${encodeURIComponent(c.user_id)}" style="padding:10px 14px;">Manage</a>` : ""}
+          ${cancelHtml}
+          ${canOpen ? `<a class="ghost" href="creator-profile.html?u=${uParam}" style="padding:10px 14px;">Open</a>` : `<span class="ghost disabled" title="Creator has no username yet" style="padding:10px 14px;">Open</span>`}
         </div>
       `;
+      // wire cancel button (no inline onclick)
+      const btn = el.querySelector("[data-cancel-sub]");
+      if(btn){
+        btn.addEventListener("click", () => {
+          const subId = btn.getAttribute("data-cancel-sub");
+          const label = btn.getAttribute("data-cancel-label") || "";
+          cancelSubscription(subId, label);
+        });
+      }
+
       subsList.appendChild(el);
     }
   }
+
 
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     try{ await onlypawsClient.auth.signOut(); }catch(e){}
