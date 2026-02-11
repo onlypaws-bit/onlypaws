@@ -399,7 +399,6 @@ async function loadSubscriptions(userId){
       .select("creator_id,status,is_active,created_at,current_period_end,stripe_subscription_id")
       .eq("fan_id", userId)
       .eq("is_active", true)
-      .in("status", ["active","past_due"])
       .order("created_at", { ascending:false });
 
     if(error){
@@ -436,12 +435,17 @@ async function loadSubscriptions(userId){
       const avatar = (c?.avatar_url || "").trim();
 
       const status = (row.status || "active").toString();
-      const badgeText =
-        status === "active" ? "Active" :
-        status === "past_due" ? "Past due" :
-        status === "canceled" ? "Canceled" :
-        status === "expired" ? "Expired" :
-        status;
+let badgeText = "Active";
+
+if(status === "past_due"){
+  badgeText = "Past due";
+}
+else if(status === "canceled" && row.is_active){
+  badgeText = "Cancels at period end";
+}
+else if(!row.is_active){
+  badgeText = "Expired";
+}
 
       const until = row.current_period_end ? new Date(row.current_period_end).toLocaleDateString() : null;
 
@@ -451,7 +455,11 @@ async function loadSubscriptions(userId){
       ].filter(Boolean).join(" • ");
 
 
-      const canCancel = (status === "active" && row.stripe_subscription_id);
+      const canCancel =
+  row.is_active &&
+  status === "active" &&
+  row.stripe_subscription_id;
+
 
       const cancelHtml = canCancel
         ? `<button class="ghost danger" type="button" data-cancel-sub="${esc(row.stripe_subscription_id)}" data-cancel-label="${esc(dname)}">Cancel</button>`
