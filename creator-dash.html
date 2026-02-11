@@ -146,6 +146,15 @@
       padding:12px 14px;
       display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
     }
+
+    .rowCard.clickable{
+      cursor:pointer;
+      transition: background .16s ease, transform .16s ease;
+    }
+    .rowCard.clickable:hover{
+      background: rgba(255,255,255,.14);
+      transform: translateY(-1px);
+    }
     .rowCard b{display:block;margin-bottom:4px}
     .postMeta{min-width:0}
     .postActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
@@ -633,7 +642,7 @@
         `;
       }
     }
-
+    
     function renderSubs(list){
       if(!list || list.length === 0){
         subsList.innerHTML = `
@@ -644,35 +653,88 @@
         `;
         return;
       }
-      subsList.innerHTML = list.map(s => {
+
+      const now = Date.now();
+
+      // ✅ Show canceled subs that are still valid until current_period_end
+      const visible = (list || []).filter(s => {
+        const status = String(s.status || "").toLowerCase();
+        const cpe = s.current_period_end ? new Date(s.current_period_end).getTime() : 0;
+        return (["active","trialing","past_due"].includes(status) || (cpe && cpe > now));
+      });
+
+      if(visible.length === 0){
+        subsList.innerHTML = `
+          <div class="locked" style="margin-top:10px;">
+            <b>No active subscribers</b>
+            <div class="hint">Subscriptions will appear here while access is valid.</div>
+          </div>
+        `;
+        return;
+      }
+
+      subsList.innerHTML = visible.map(s => {
         const name = s.fan_display_name || s.fan_username || "Subscriber";
-        const uname = s.fan_username ? `@${s.fan_username}` : "";
-        const status = s.status || (s.is_active ? "active" : "inactive");
+        const unameRaw = (s.fan_username || "").trim();
+        const uname = unameRaw ? `@${unameRaw}` : "";
+
         const since = s.created_at ? new Date(s.created_at).toLocaleDateString() : "";
-        const periodEnd = s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "";
+        const endDate = s.current_period_end ? new Date(s.current_period_end).toLocaleDateString() : "";
+
+        const status = String(s.status || "").toLowerCase();
+        const isActive = (s.is_active === true);
+        // In this schema we don't have cancel_at_period_end. We infer it like fan-dash:
+        // status=canceled + is_active=true => cancels at period end (still has access).
+        const cancelsAtPeriodEnd = (status === "canceled" && isActive);
+
+        let badgeText = "Active";
+        let badgeIcon = "💜";
+        if(status === "trialing"){ badgeText = "Trial"; badgeIcon = "✨"; }
+        else if(status === "past_due"){ badgeText = "Past due"; badgeIcon = "⚠️"; }
+        else if(cancelsAtPeriodEnd && endDate){ badgeText = "Cancels at period end"; badgeIcon = "⏳"; }
+        else if(!isActive){ badgeText = "Expired"; badgeIcon = "❌"; }
+        else if(status === "canceled"){ badgeText = "Canceled"; badgeIcon = "❌"; }
+
         const avatar = s.fan_avatar_url
           ? `<img class="avatarMini" src="${esc(s.fan_avatar_url)}" alt="avatar">`
           : `<div class="avatarMini">🐾</div>`;
+
+        const renewOrUntil = endDate
+          ? (cancelsAtPeriodEnd ? `Access until ${endDate}` : `Renews ${endDate}`)
+          : "";
+
+        const metaLine = [
+          since ? `Subscribed: ${since}` : "",
+          renewOrUntil
+        ].filter(Boolean).join(" • ");
+
+        const clickable = unameRaw ? "clickable" : "";
         return `
-          <div class="rowCard">
+          <div class="rowCard ${clickable}" data-username="${esc(unameRaw)}">
             <div class="postMeta">
               <div class="subLine">
                 ${avatar}
                 <div style="display:flex;flex-direction:column;gap:2px;">
                   <b style="margin:0;">${esc(name)} ${uname ? `<span style="opacity:.85;font-weight:700;">${esc(uname)}</span>` : ""}</b>
-                  <span class="small" style="opacity:.9;">
-                    ${since ? `Subscribed: ${esc(since)}` : "Subscribed"}
-                    ${periodEnd ? ` • Renews: ${esc(periodEnd)}` : ""}
-                  </span>
+                  <span class="small" style="opacity:.9;">${esc(metaLine)}</span>
                 </div>
               </div>
             </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <span class="badge">💜 ${esc(status)}</span>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center">
+              <span class="badge">${badgeIcon} ${esc(badgeText)}</span>
             </div>
           </div>
         `;
       }).join("");
+
+      // ✅ Row click → fan profile (will build soon)
+      subsList.querySelectorAll(".rowCard.clickable").forEach(row => {
+        const username = (row.getAttribute("data-username") || "").trim();
+        if(!username) return;
+        row.addEventListener("click", () => {
+          window.location.href = `fan-profile.html?u=${encodeURIComponent(username)}`;
+        });
+      });
     }
 
     function renderFollowers(list){
@@ -685,69 +747,116 @@
         `;
         return;
       }
+
       followersList.innerHTML = list.map(f => {
         const name = f.fan_display_name || f.fan_username || "Follower";
-        const uname = f.fan_username ? `@${f.fan_username}` : "";
+        const unameRaw = (f.fan_username || "").trim();
+        const uname = unameRaw ? `@${unameRaw}` : "";
         const since = f.created_at ? new Date(f.created_at).toLocaleDateString() : "";
+
         const avatar = f.fan_avatar_url
           ? `<img class="avatarMini" src="${esc(f.fan_avatar_url)}" alt="avatar">`
           : `<div class="avatarMini">🐾</div>`;
+
+        const metaLine = since ? `Followed: ${since}` : "Followed";
+
+        const clickable = unameRaw ? "clickable" : "";
         return `
-          <div class="rowCard">
+          <div class="rowCard ${clickable}" data-username="${esc(unameRaw)}">
             <div class="postMeta">
               <div class="subLine">
                 ${avatar}
                 <div style="display:flex;flex-direction:column;gap:2px;">
                   <b style="margin:0;">${esc(name)} ${uname ? `<span style="opacity:.85;font-weight:700;">${esc(uname)}</span>` : ""}</b>
-                  <span class="small" style="opacity:.9;">
-                    ${since ? `Followed: ${esc(since)}` : "Followed"}
-                  </span>
+                  <span class="small" style="opacity:.9;">${esc(metaLine)}</span>
                 </div>
-              </div>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">
-                <span class="badge">🆓 follower</span>
               </div>
             </div>
           </div>
         `;
       }).join("");
-    }
 
+      // ✅ Row click → fan profile
+      followersList.querySelectorAll(".rowCard.clickable").forEach(row => {
+        const username = (row.getAttribute("data-username") || "").trim();
+        if(!username) return;
+        row.addEventListener("click", () => {
+          window.location.href = `fan-profile.html?u=${encodeURIComponent(username)}`;
+        });
+      });
+    }
+    
     async function loadAudience(session){
+      // Subscribers and followers are loaded independently (one failing must not block the other).
       subsHint.textContent = "Loading…";
       followersHint.textContent = "Loading…";
       subsList.innerHTML = "";
       followersList.innerHTML = "";
+
+      // ---- Subscribers (from base table, avoid view filters) ----
       try{
-        const { data: subs, error: se } = await onlypawsClient
-          .from("v_subscribers_creator")
-          .select("*")
+        const { data: subsRows, error: se } = await onlypawsClient
+          .from("creator_subscriptions")
+          .select("fan_id,status,is_active,created_at,current_period_end,stripe_subscription_id")
           .eq("creator_id", session.user.id)
           .order("created_at", { ascending: false })
           .limit(200);
+
         if(se) throw se;
 
+        const fanIds = Array.from(new Set((subsRows || []).map(r => r.fan_id).filter(Boolean)));
+        const pMap = new Map();
+
+        if(fanIds.length){
+          const { data: profs, error: pe } = await onlypawsClient
+            .from("profiles")
+            .select("user_id, username, display_name, avatar_url")
+            .in("user_id", fanIds);
+
+          if(pe) throw pe;
+
+          for(const p of (profs || [])) pMap.set(p.user_id, p);
+        }
+
+        const subs = (subsRows || []).map(r => {
+          const p = pMap.get(r.fan_id) || {};
+          return {
+            ...r,
+            fan_username: p.username || null,
+            fan_display_name: p.display_name || null,
+            fan_avatar_url: p.avatar_url || null,
+          };
+        });
+
+        renderSubs(subs || []);
+        subsHint.textContent = (subs && subs.length) ? "Loaded ✅" : "No subscribers yet.";
+      }catch(e){
+        const msg = esc(e?.message || String(e));
+        subsHint.textContent = "Couldn’t load subscribers";
+        subsList.innerHTML = `<div class="locked" style="margin-top:10px;"><b>Subscribers error</b><div class="hint">${msg}</div></div>`;
+      }
+
+      // ---- Followers (view) ----
+      try{
         const { data: foll, error: fe } = await onlypawsClient
           .from("v_followers_creator")
           .select("*")
           .eq("creator_id", session.user.id)
           .order("created_at", { ascending: false })
           .limit(200);
+
         if(fe) throw fe;
 
-        renderSubs(subs || []);
         renderFollowers(foll || []);
-
-        subsHint.textContent = (subs && subs.length) ? "Loaded ✅" : "No subscribers yet.";
         followersHint.textContent = (foll && foll.length) ? "Loaded ✅" : "No followers yet.";
       }catch(e){
         const msg = esc(e?.message || String(e));
-        subsHint.textContent = "Couldn’t load subscribers";
         followersHint.textContent = "Couldn’t load followers";
-        subsList.innerHTML = `<div class="locked" style="margin-top:10px;"><b>Subscribers error</b><div class="hint">${msg}</div></div>`;
         followersList.innerHTML = `<div class="locked" style="margin-top:10px;"><b>Followers error</b><div class="hint">${msg}</div></div>`;
       }
     }
+
+
     async function loadSubscribers(session){ return loadAudience(session); }
 
     // ✅ Stripe balance (connected) + eligibility
