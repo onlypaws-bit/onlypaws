@@ -32,15 +32,19 @@ if (!SUPABASE_SERVICE_ROLE_KEY)
 
 // ---------- Helpers: Supabase REST (service role) ----------
 async function sbAdmin(path: string, init: RequestInit) {
+  // ✅ DO NOT CLOBBER Prefer (needed for upsert merge-duplicates)
+  const inHeaders = (init.headers || {}) as Record<string, string>;
+  const headers: Record<string, string> = { ...inHeaders };
+
+  if (!headers["Prefer"]) headers["Prefer"] = "return=representation";
+  if (!headers["Content-Type"]) headers["Content-Type"] = "application/json";
+
+  headers["apikey"] = SUPABASE_SERVICE_ROLE_KEY;
+  headers["Authorization"] = `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
+
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...init,
-    headers: {
-      ...(init.headers || {}),
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
+    headers,
   });
 
   const text = await res.text();
@@ -81,7 +85,6 @@ async function stripePOST(path: string, params: Record<string, string>) {
 
 // ---------- Helpers: Stripe signature verification (Web Crypto) ----------
 function parseStripeSigHeader(sig: string) {
-  // format: t=timestamp,v1=signature[,v1=...]
   const parts = sig.split(",").map((s) => s.trim());
   const t = parts.find((p) => p.startsWith("t="))?.slice(2) ?? "";
   const v1s = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
@@ -147,7 +150,7 @@ async function upsertCreatorSubscriptionRow(row: {
   stripe_subscription_id: string | null;
   current_period_end: string | null;
 }) {
-  // ✅ IMPORTANT: specify conflict target for composite unique
+  // ✅ IMPORTANT: upsert on composite unique (creator_id, fan_id)
   await sbAdmin(`creator_subscriptions?on_conflict=creator_id,fan_id`, {
     method: "POST",
     body: JSON.stringify([
@@ -194,15 +197,11 @@ async function upsertFromStripeSubscription(sub: any) {
 
   const cancelAtPeriodEnd = !!sub?.cancel_at_period_end;
 
-  // ✅ Scheduled cancel: keep access until period end
+  // ✅ Scheduled cancel: show canceled, but keep access until period end
   const statusDb = cancelAtPeriodEnd ? "canceled" : statusDbBase;
 
-  // If Stripe says active/past_due/trialing -> active access
-  // If scheduled cancel -> still active access until period end (front uses current_period_end)
   const isActive =
-    cancelAtPeriodEnd
-      ? true
-      : (statusDbBase === "active" || statusDbBase === "past_due");
+    cancelAtPeriodEnd ? true : (statusDbBase === "active" || statusDbBase === "past_due");
 
   await upsertCreatorSubscriptionRow({
     fan_id,
@@ -216,7 +215,6 @@ async function upsertFromStripeSubscription(sub: any) {
 }
 
 async function patchSubscriptionMetadata(subId: string, fan_id: string, creator_id: string) {
-  // Stripe: POST /v1/subscriptions/{id} with metadata[fan_id], metadata[creator_id]
   await stripePOST(`subscriptions/${subId}`, {
     "metadata[fan_id]": fan_id,
     "metadata[creator_id]": creator_id,
@@ -233,7 +231,6 @@ Deno.serve(async (req) => {
     const sig = req.headers.get("stripe-signature");
     if (!sig) return new Response("Missing stripe-signature", { status: 400, headers: corsHeaders });
 
-    // MUST be raw body
     const rawBody = await req.text();
 
     const ok = await verifyStripeSignature(rawBody, sig, STRIPE_WEBHOOK_SECRET);
@@ -312,7 +309,6 @@ Deno.serve(async (req) => {
       const fan_id = safeStr(obj?.metadata?.fan_id);
       const creator_id = safeStr(obj?.metadata?.creator_id);
 
-      // If we have metadata on session, patch it onto subscription
       if (fan_id && creator_id) {
         try {
           await patchSubscriptionMetadata(subId, fan_id, creator_id);
@@ -333,7 +329,7 @@ Deno.serve(async (req) => {
       return new Response("ok", { status: 200, headers: corsHeaders });
     }
 
-    // invoice events
+    // invoice events (Stripe may send different names)
     if (
       type === "invoice_payment.paid" ||
       type === "invoice.payment_succeeded" ||
@@ -354,7 +350,6 @@ Deno.serve(async (req) => {
       return new Response("ok", { status: 200, headers: corsHeaders });
     }
 
-    // ignore others
     return new Response("ok", { status: 200, headers: corsHeaders });
   } catch (e) {
     console.error(e);
