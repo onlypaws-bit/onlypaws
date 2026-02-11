@@ -29,8 +29,17 @@ function env(...keys: string[]) {
   return "";
 }
 
+function toIsoFromStripeUnix(seconds?: number | null) {
+  if (!seconds) return null;
+  return new Date(seconds * 1000).toISOString();
+}
+
+function isStillActive(periodEndIso: string | null) {
+  if (!periodEndIso) return true; // se non ho period_end, assumo attiva (può essere monthly senza sync)
+  return new Date(periodEndIso).getTime() > Date.now();
+}
+
 Deno.serve(async (req) => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
   }
@@ -50,7 +59,6 @@ Deno.serve(async (req) => {
       return json(500, { error: "Missing Supabase env vars" });
     }
 
-    // ✅ EDGE-SAFE Stripe init (fetch-based HTTP client)
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
       apiVersion: "2024-06-20",
       httpClient: Stripe.createFetchHttpClient(),
@@ -67,7 +75,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) return json(401, { error: "Not authenticated" });
     const fanId = userData.user.id;
 
-    // body parse (safe)
+    // body parse
     let body: Body = {};
     try {
       body = (await req.json()) as Body;
@@ -89,11 +97,11 @@ Deno.serve(async (req) => {
       auth: { persistSession: false },
     });
 
-    // find subscription row for this fan (prefer by stripe_subscription_id)
+    // find subscription row for this fan
     let subQuery = admin
       .from("creator_subscriptions")
       .select(
-        "id, fan_id, creator_id, status, is_active, stripe_subscription_id, current_period_end, created_at",
+        "id, fan_id, creator_id, status, is_active, cancel_at_period_end, stripe_subscription_id, current_period_end, created_at",
       )
       .eq("fan_id", fanId)
       .order("created_at", { ascending: false })
@@ -104,20 +112,36 @@ Deno.serve(async (req) => {
     } else {
       subQuery = subQuery
         .eq("creator_id", creator_id)
-        .in("status", ["active", "past_due", "canceled"]);
+        .in("status", ["active", "trialing", "past_due", "canceled", "unpaid"]);
     }
 
     const { data: sub, error: subErr } = await subQuery.maybeSingle();
-
     if (subErr) return json(500, { error: "DB error", details: subErr.message });
     if (!sub?.stripe_subscription_id) {
       return json(404, { error: "No Stripe subscription found for this creator" });
     }
 
-    // stripe: idempotent cancellation-at-period-end
+    // Stripe current state
     const current = await stripe.subscriptions.retrieve(sub.stripe_subscription_id);
 
+    // If already cancel_at_period_end, sync DB anyway (important!)
     if (current.cancel_at_period_end) {
+      const periodEndIso = toIsoFromStripeUnix(current.current_period_end);
+      const still = isStillActive(periodEndIso);
+
+      const { error: upErr } = await admin
+        .from("creator_subscriptions")
+        .update({
+          status: current.status,                    // sync
+          cancel_at_period_end: true,               // ✅ new column
+          current_period_end: periodEndIso,
+          is_active: still,                         // true until period end
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", sub.id);
+
+      if (upErr) return json(500, { error: "DB update error", details: upErr.message });
+
       return json(200, {
         ok: true,
         already: true,
@@ -127,21 +151,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Request cancellation at period end
     const updated = await stripe.subscriptions.update(sub.stripe_subscription_id, {
       cancel_at_period_end: true,
     });
 
-    const periodEndIso = updated.current_period_end
-      ? new Date(updated.current_period_end * 1000).toISOString()
-      : null;
+    const periodEndIso = toIsoFromStripeUnix(updated.current_period_end);
+    const still = isStillActive(periodEndIso);
 
-    // IMPORTANT:
-    // keep access until period end
     const { error: upErr } = await admin
       .from("creator_subscriptions")
       .update({
-        status: "active",
-        is_active: true,
+        status: updated.status,                // usually "active"
+        cancel_at_period_end: true,           // ✅ new column
+        is_active: still,                     // keep access until period end
         current_period_end: periodEndIso,
         updated_at: new Date().toISOString(),
       })
@@ -152,8 +175,9 @@ Deno.serve(async (req) => {
     return json(200, {
       ok: true,
       stripe_subscription_id: updated.id,
-      cancel_at_period_end: updated.cancel_at_period_end,
+      cancel_at_period_end: true,
       current_period_end: updated.current_period_end,
+      status: updated.status,
     });
   } catch (e) {
     console.error(e);
