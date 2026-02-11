@@ -142,18 +142,20 @@ async function upsertCreatorSubscriptionRow(row: {
   fan_id: string;
   creator_id: string;
   status: string;
+  is_active: boolean;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   current_period_end: string | null;
 }) {
-  await sbAdmin(`creator_subscriptions`, {
+  // ✅ IMPORTANT: specify conflict target for composite unique
+  await sbAdmin(`creator_subscriptions?on_conflict=creator_id,fan_id`, {
     method: "POST",
     body: JSON.stringify([
       {
         fan_id: row.fan_id,
         creator_id: row.creator_id,
         status: row.status,
-        is_active: row.status === "active",
+        is_active: row.is_active,
         current_period_end: row.current_period_end,
         stripe_customer_id: row.stripe_customer_id,
         stripe_subscription_id: row.stripe_subscription_id,
@@ -186,13 +188,27 @@ async function upsertFromStripeSubscription(sub: any) {
   }
 
   const customerId = safeStr(sub?.customer) || safeStr(sub?.customer?.id) || null;
-  const statusDb = mapStatusToDb(String(sub?.status || "past_due"));
+  const stripeStatus = String(sub?.status || "past_due");
+  const statusDbBase = mapStatusToDb(stripeStatus);
   const cpe = isoFromUnix(sub?.current_period_end ?? null);
+
+  const cancelAtPeriodEnd = !!sub?.cancel_at_period_end;
+
+  // ✅ Scheduled cancel: keep access until period end
+  const statusDb = cancelAtPeriodEnd ? "canceled" : statusDbBase;
+
+  // If Stripe says active/past_due/trialing -> active access
+  // If scheduled cancel -> still active access until period end (front uses current_period_end)
+  const isActive =
+    cancelAtPeriodEnd
+      ? true
+      : (statusDbBase === "active" || statusDbBase === "past_due");
 
   await upsertCreatorSubscriptionRow({
     fan_id,
     creator_id,
     status: statusDb,
+    is_active: isActive,
     stripe_customer_id: customerId,
     stripe_subscription_id: safeStr(sub?.id) || null,
     current_period_end: cpe,
@@ -317,8 +333,12 @@ Deno.serve(async (req) => {
       return new Response("ok", { status: 200, headers: corsHeaders });
     }
 
-    // invoice events (your Stripe UI)
-    if (type === "invoice_payment.paid" || type === "invoice.payment_succeeded") {
+    // invoice events
+    if (
+      type === "invoice_payment.paid" ||
+      type === "invoice.payment_succeeded" ||
+      type === "invoice.paid"
+    ) {
       const subId = safeStr(obj?.subscription);
       if (subId) {
         const sub = await stripeGET(`subscriptions/${subId}`);
