@@ -1089,7 +1089,7 @@
       __creatorUnlocked = !!active;
 
       if(!active){
-        enable(createPostBtn, false);
+        enable(createPostBtn, true);
         const qp = new URLSearchParams(window.location.search);
         const cameFromStripe = (
           qp.has("session_id") || qp.has("success") || qp.has("checkout") ||
