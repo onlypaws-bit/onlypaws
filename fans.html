@@ -476,13 +476,13 @@ async function redirectAfterAuth(){
         if(password.length < 6){ setMsg("Password must be at least 6 characters."); return; }
 
         const { data, error } = await onlypawsClient.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { role: "fan" },
-            emailRedirectTo: window.location.origin + "/" + getNextPath()
-          }
-        });
+  email,
+  password,
+  options: {
+    data: { role: "fan" },
+    emailRedirectTo: window.location.origin + "/email-confirmed.html"
+  }
+});
 
         if(error){
           setMsg("❌ " + error.message);
